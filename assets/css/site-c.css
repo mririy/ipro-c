@@ -303,3 +303,13 @@ html.a11y{--vbar:0px}
   html.js:not(.a11y) .hero__h .r1{top:calc(100px + 4svh)}
   html.js:not(.a11y) .hero__h .r2{bottom:calc(var(--vbar) + 110px + 2svh)}
 }
+
+/* ---------- iPhone (Safari 26): цвет полос браузера сверху и снизу ----------
+   Safari красит полосу у часов и полосу с адресом в цвет фона страницы или закреплённого элемента у края экрана
+   (theme-color больше не работает). Две тонкие полоски у краёв подсказывают ему цвет той главы, что сейчас у края,
+   и полосы браузера сливаются со страницей. Цвет ставит site-c.js. */
+.edge{display:none;position:fixed;left:0;right:0;z-index:59;height:6px;pointer-events:none;background-color:var(--edge,#0A2C55);transition:background-color .25s}
+.edge--t{top:0;height:max(6px,env(safe-area-inset-top,0px))}
+html.ios .edge{display:block}
+.edge--b{bottom:0}
+html.a11y .edge{display:none}

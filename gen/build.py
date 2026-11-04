@@ -863,6 +863,7 @@ def page():
 </head>
 <body>
 {{SPRITE}}
+<i class="edge edge--t" aria-hidden="true"></i><i class="edge edge--b" aria-hidden="true"></i>
 <a class="skip" href="#concept">К содержанию</a>
 {header()}<main id="main">
 {main}</main>

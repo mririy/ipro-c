@@ -56,6 +56,35 @@
     v.addEventListener('canplay', kickV);
   }
 
+  /* полосы браузера на iPhone: цвет главы у верхнего и нижнего края экрана */
+  var eT = document.querySelector('.edge--t'), eB = document.querySelector('.edge--b');
+  var secs = [].slice.call(document.querySelectorAll('main > .sc'));
+  function colorAt(y, bottom) {
+    for (var i = secs.length - 1; i >= 0; i--) {
+      var r = secs[i].getBoundingClientRect();
+      if (r.top <= y && r.bottom > y) {
+        var s = secs[i];
+        if (s.id === 'top') return bottom ? '#0F3F75' : '#0A2C55';   /* синий перелив первого экрана */
+        return s.dataset.tone === 'light' ? '#F4F8FD' : '#0C0C10';
+      }
+    }
+    return '#0C0C10';
+  }
+  var eTick = false, cT = '', cB = '';
+  function paintEdges() {
+    eTick = false;
+    var t = colorAt(1, false), b = colorAt(innerHeight - 2, true);
+    if (t !== cT) { cT = t; eT.style.setProperty('--edge', t); }
+    if (b !== cB) { cB = b; eB.style.setProperty('--edge', b); }
+  }
+  var ios = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if (ios) root.classList.add('ios');
+  if (ios && eT && eB) {
+    addEventListener('scroll', function () { if (!eTick) { eTick = true; requestAnimationFrame(paintEdges); } }, { passive: true });
+    addEventListener('resize', paintEdges);
+    paintEdges();
+  }
+
   /* кнопка записи внизу экрана прячется у самой формы */
   var sg = document.getElementById('signup');
   if (sg && 'IntersectionObserver' in window) {
