@@ -139,12 +139,13 @@ def mix(a, b, t):
 
 _SKY = {'prev': None, 'tone': None}
 INK = '#0C0C10,#0C0C10'  # почти чёрный, как у Рокета; цвета школы — в акцентах и переливах
-C_SKY = {  # глава: (основной цвет главы, тон текста); сами фоны — в site-c.css (#id { --bg, --g1, --g2 })
-    'news': ('#08264A,#08264A', 'dark'), 'concept': ('#FBF7EF,#FBF7EF', 'light'), 'about': ('#F2F7FD,#F2F7FD', 'light'),
-    'programs': ('#0A2C55,#0A2C55', 'dark'), 'food': ('#FBF7EF,#FBF7EF', 'light'), 'teachers': ('#FFF8E6,#FFF8E6', 'light'),
-    'safety': ('#F2F7FD,#F2F7FD', 'light'), 'extra': ('#0A2C55,#0A2C55', 'dark'), 'transfer': ('#F2F7FD,#F2F7FD', 'light'),
-    'summer': ('#FBF7EF,#FBF7EF', 'light'), 'reviews': ('#FFF8E6,#FFF8E6', 'light'), 'admission': ('#0A2C55,#0A2C55', 'dark'),
-    'gallery': ('#08264A,#08264A', 'dark'), 'act-night': (INK, 'dark'), 'signup': ('#0A2C55,#0A2C55', 'dark'),
+BLUE = '#0A2C55,#0A2C55'  # тёмные главы — синий перелив школы (сам перелив — в site-c.css)
+C_SKY = {  # глава: (небо, тон) — светлые: переливы неба #D8EBF9 и солнца #FCC41C; тёмные — синий школы
+    'news': (BLUE, 'dark'), 'concept': ('#D8EBF9,#FFF1C2', 'light'), 'about': ('#FFF4D6,#DCEEFF', 'light'),
+    'programs': (BLUE, 'dark'), 'food': ('#CFE6FB,#FFF1C2', 'light'), 'teachers': (BLUE, 'dark'),
+    'safety': ('#FFEDB3,#DCEEFF', 'light'), 'extra': (BLUE, 'dark'), 'transfer': ('#DCEEFF,#FFE7A0', 'light'),
+    'summer': (BLUE, 'dark'), 'reviews': ('#FFF1C2,#CFE6FB', 'light'), 'admission': (BLUE, 'dark'),
+    'gallery': (BLUE, 'dark'), 'act-night': (INK, 'dark'), 'signup': (BLUE, 'dark'),
 }  # небо и тон предыдущей главы — главы собираются по порядку страницы
 
 
@@ -157,7 +158,7 @@ def section(id_, title, body, sky, tone='light', cls='', extra=''):
     s1, s2 = sky.split(',')
     s0 = _SKY['prev'] or s1
     prev_tone = _SKY['tone']
-    cut = prev_tone is not None and (prev_tone != tone or (id_ in C_SKY and s0 != s1)) and id_ != 'act-night'  # у каждой главы свой цвет — граница дугой; ночная сцена начинается сразу
+    cut = prev_tone is not None and prev_tone != tone
     _SKY['prev'], _SKY['tone'] = s2, tone
     # середина перехода: из тёмного в светлое — бледный тон новой главы (без грязно-серой середины), иначе — смесь двух
     sb = mix(s1, '#FFFFFF', .55) if (cut and tone == 'light') else mix(s0, s1, .5)
