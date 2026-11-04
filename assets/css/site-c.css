@@ -92,10 +92,10 @@ html.modal-open .ask.dock-cta{opacity:0;pointer-events:none}
 .hero__gloss{position:absolute;inset:0;z-index:2;border-radius:inherit;border:1px solid rgba(255,255,255,.5);background:linear-gradient(115deg,rgba(255,255,255,.34) 0%,rgba(255,255,255,.06) 34%,rgba(255,255,255,0) 50%,rgba(255,255,255,.1) 100%);opacity:var(--t,0);pointer-events:none}
 .hero__win video::-webkit-media-controls,.hero__win video::-webkit-media-controls-start-playback-button,.hero__win video::-webkit-media-controls-overlay-play-button{display:none!important;-webkit-appearance:none}
 /* место карточки: невидимая разметка, по которой скрипт считает, куда сжимается видео */
-.rhero__slot{position:absolute;left:50%;top:calc(100svh * .63);width:min(64vw,420px,36svh);aspect-ratio:3/4;translate:-50% -50%;visibility:hidden;pointer-events:none}
+.rhero__slot{position:absolute;left:50%;top:calc(100svh * .63 + var(--po));width:min(64vw,420px,36svh);aspect-ratio:3/4;translate:-50% -50%;visibility:hidden;pointer-events:none}
 .rhero__mark{position:absolute;left:8%;bottom:6%;width:min(96px,40%);height:auto;filter:drop-shadow(0 2px 10px rgba(0,0,0,.4))}
 .rhero__chip{position:absolute;left:14px;top:14px;padding:8px 12px;border-radius:999px;background:rgba(12,12,16,.45);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.25);color:#fff;font:600 11px/1 var(--mono);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
-.rhero__steps{position:absolute;z-index:2;left:0;right:0;top:calc(80px + env(safe-area-inset-top,0px));display:grid;gap:14px;margin:0;list-style:none;pointer-events:none}
+.rhero__steps{position:absolute;z-index:2;left:0;right:0;top:calc(80px + var(--po) + env(safe-area-inset-top,0px));display:grid;gap:14px;margin:0;list-style:none;pointer-events:none}
 .rstep{display:grid;justify-items:center;gap:8px;text-align:center;opacity:var(--o,0);translate:0 calc((1 - var(--o,0)) * 24px)}
 .rstep:nth-child(1){--o:clamp(0,calc(var(--st,0) * 3),1)}
 .rstep:nth-child(2){--o:clamp(0,calc(var(--st,0) * 3 - 1),1)}
@@ -209,7 +209,7 @@ html.modal-open .ask.dock-cta{opacity:0;pointer-events:none}
 
 /* ---------- компьютер ---------- */
 @media (min-width:900px){
-  .rhero__slot{left:72%;top:calc(100svh * .56);width:min(34vw,520px);aspect-ratio:4/5}
+  .rhero__slot{left:72%;top:calc(100svh * .56 + var(--po));width:min(34vw,520px);aspect-ratio:4/5}
   .rhero__steps{left:6vw;right:auto;width:min(40vw,560px);top:50%;translate:0 -50%;gap:34px}
   .rstep b{font-size:17px}
   .rstep small{font-size:14px}
@@ -253,20 +253,20 @@ html.a11y .ask.dock-cta{background:#000;color:#fff}
 .th{text-align:left}
 .th__t{font-size:clamp(64px,17vw,200px);margin-left:0}
 .nightseq .pin::after{background:linear-gradient(180deg,#0C0C10 0%,rgba(12,12,16,.8) 35%,rgba(12,12,16,0))}
-.night__cta{bottom:calc(96px + var(--vbar) + env(safe-area-inset-bottom,0px))}
+.night__cta{bottom:calc(96px + var(--vbar) + var(--po) + env(safe-area-inset-bottom,0px))}
 .num b{font-size:clamp(26px,9vw,88px)}
 .num:last-child b{font-size:clamp(14px,4.3vw,36px)}
 
 /* низкие телефоны: карточка меньше и ниже, шаги плотнее */
 @media (max-width:899px) and (max-height:800px){
-  .rhero__slot{top:calc(100svh * .69);width:min(60vw,32svh)}
-  .rhero__steps{gap:8px;top:calc(72px + env(safe-area-inset-top,0px))}
+  .rhero__slot{top:calc(100svh * .69 + var(--po));width:min(60vw,32svh)}
+  .rhero__steps{gap:8px;top:calc(72px + var(--po) + env(safe-area-inset-top,0px))}
   .rstep{gap:5px}
   .rstep__i{width:38px;height:38px}
   .rstep__i .sun{width:22px;height:22px}
 }
 @media (max-width:899px) and (max-height:700px){
-  .rhero__slot{top:calc(100svh * .66);width:min(52vw,27svh)}
+  .rhero__slot{top:calc(100svh * .66 + var(--po));width:min(52vw,27svh)}
 }
 
 /* ---------- все заголовки глав — по центру, как у Рокета ---------- */
@@ -290,31 +290,36 @@ html.a11y .hero__h .r1,html:not(.js) .hero__h .r1{top:24%}
    Высота 100svh кончалась над панелью браузера, и когда панель сжимается при прокрутке, снизу была видна полоса фона главы.
    Теперь сцена уходит под панель (100lvh), а всё, что прижато к низу сцены, приподнято на высоту панели (--vbar). */
 :root{--vbar:0px}
-@supports (height:100lvh){:root{--vbar:calc(100lvh - 100svh)}@media (prefers-reduced-motion:no-preference){html.js:not(.a11y) .pin{height:100lvh}}}
-html.a11y{--vbar:0px}
-.estate__arrive{bottom:calc(92px + var(--vbar) + env(safe-area-inset-bottom,0px))}
-/* первый экран: «а вам спокойно» — выше кнопки записи; подсказку «Листайте» заменяет сама кнопка */
-.hero__hint{bottom:calc(18px + var(--vbar) + env(safe-area-inset-bottom,0px))}
+@supports (height:100lvh){:root{--vbar:calc(100lvh - 100svh)}}
+:root{--po:0px}
 @media (prefers-reduced-motion:no-preference){
-  html.js:not(.a11y) .hero__h .r1{top:calc(76px + env(safe-area-inset-top,0px) + 4svh)}
-  html.js:not(.a11y) .hero__h .r2{bottom:calc(var(--vbar) + 100px + env(safe-area-inset-bottom,0px) + 3svh)}
+  html.js:not(.a11y){--po:14px}
+  html.js:not(.a11y) .pin{top:calc(var(--po) * -1);height:calc(100vh + var(--po) * 2);height:calc(100lvh + var(--po) * 2)}
+  html.js:not(.a11y) .hero.rhero{margin-top:calc(var(--po) * -1)}   /* и в самом начале страницы край сцены выше экрана */
+}
+html.a11y{--vbar:0px}
+.estate__arrive{bottom:calc(92px + var(--vbar) + var(--po) + env(safe-area-inset-bottom,0px))}
+/* первый экран: «а вам спокойно» — выше кнопки записи; подсказку «Листайте» заменяет сама кнопка */
+.hero__hint{bottom:calc(18px + var(--vbar) + var(--po) + env(safe-area-inset-bottom,0px))}
+@media (prefers-reduced-motion:no-preference){
+  html.js:not(.a11y) .hero__h .r1{top:calc(76px + var(--po) + env(safe-area-inset-top,0px) + 4svh)}
+  html.js:not(.a11y) .hero__h .r2{bottom:calc(var(--vbar) + var(--po) + 100px + env(safe-area-inset-bottom,0px) + 3svh)}
 }
 @media (prefers-reduced-motion:no-preference) and (min-width:900px){
-  html.js:not(.a11y) .hero__h .r1{top:calc(100px + 4svh)}
-  html.js:not(.a11y) .hero__h .r2{bottom:calc(var(--vbar) + 110px + 2svh)}
+  html.js:not(.a11y) .hero__h .r1{top:calc(100px + var(--po) + 4svh)}
+  html.js:not(.a11y) .hero__h .r2{bottom:calc(var(--vbar) + var(--po) + 110px + 2svh)}
 }
 
-/* ---------- iPhone (Safari 26): прозрачные полосы браузера сверху и снизу ----------
-   Safari красит полосу у часов и полосу с адресом в цвет закреплённого элемента у края экрана (в пределах 3–4 px,
-   шириной от 80 %) — у нас это закреплённые сцены (первый экран, особняк, ночь), и цвет потом «залипает».
-   Две прозрачные полоски поверх всего у самых краёв перехватывают эту проверку, и полосы браузера остаются стеклом,
-   сквозь которое видна страница (приём из fantinel.dev/blog/safari-floating-url-bar-background). */
-.edge{display:none;position:fixed;left:0;right:0;z-index:999;height:6px;pointer-events:none;background:transparent}
-.edge--t{top:-2px}
-.edge--b{bottom:-2px}
-@supports (-webkit-touch-callout:none){.edge{display:block}}
-html.a11y .edge{display:none}
+/* ---------- iPhone (Safari 26): полосы браузера — стекло, сквозь которое видна страница ----------
+   Safari заливает полосу у часов и полосу с адресом сплошным цветом, если у самого края экрана (≈3–4 px) лежит
+   закреплённый элемент шириной от 80 % — у нас это закреплённые сцены (первый экран, особняк, ночь); цвет потом «залипает».
+   Поэтому сцены чуть больше экрана и заходят за оба края на --po: их края никогда не стоят у края экрана,
+   а всё, что прижато к верху или низу сцены, сдвинуто на те же --po. */
 
 /* кнопка записи появляется плавно, когда первый экран пролистан до конца (класс ставит site-c.js) */
-.ask.dock-cta{transition:opacity .5s var(--ease),transform .5s var(--ease)}
-html.cta-wait .ask.dock-cta{opacity:0;transform:translateY(28px);pointer-events:none}
+.ask.dock-cta{transform-origin:50% 50%;transition:opacity .45s var(--ease),transform .7s cubic-bezier(.2,1.25,.3,1)}
+html.cta-wait .ask.dock-cta{opacity:0;transform:scale(.18);pointer-events:none}
+.hero .hero__hint{opacity:1;transition:opacity .4s var(--ease)}
+html:not(.cta-wait) .hero .hero__hint{opacity:0}
+.estate__head{top:calc(84px + var(--po) + env(safe-area-inset-top,0px))}
+.night__bye{top:calc(96px + var(--po) + env(safe-area-inset-top,0px))}
