@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-"""Собирает index.html сайта IPROSCHOOL, версия C — в духе rocketbank.ru: чёрные главы чередуются
-с пастельными переливами, строчные широкие заголовки, моноширинные подписи капсом, стеклянные карточки,
+"""Собирает index.html сайта IPROSCHOOL, версия C — в духе rocketbank.ru в цветах школы: тёмно-синие главы
+чередуются с переливами неба и солнца, строчные широкие заголовки, моноширинные подписи капсом, стеклянные карточки,
 кнопка записи всегда внизу экрана. Тексты и разделы — как в версии A.
 Ниже — исходное описание версии A, от которой собрана эта.
 
@@ -138,13 +138,13 @@ def mix(a, b, t):
 
 
 _SKY = {'prev': None, 'tone': None}
-INK = '#0F0F12,#0F0F12'
-C_SKY = {  # глава: (небо, тон)
-    'news': (INK, 'dark'), 'concept': ('#EADCFF,#FFD9E8', 'light'), 'about': ('#FFE6DA,#EDE3FF', 'light'),
-    'programs': (INK, 'dark'), 'food': ('#DDEEFF,#EEDDFF', 'light'), 'teachers': (INK, 'dark'),
-    'safety': ('#FFE1EC,#FFE9D8', 'light'), 'extra': (INK, 'dark'), 'transfer': ('#E6DDFF,#D9EEFF', 'light'),
-    'summer': (INK, 'dark'), 'reviews': ('#FFDCE9,#E8DCFF', 'light'), 'admission': (INK, 'dark'),
-    'gallery': (INK, 'dark'), 'act-night': (INK, 'dark'), 'signup': (INK, 'dark'),
+INK = '#08172C,#0A2C55'  # глубокий синий школы
+C_SKY = {  # глава: (небо, тон) — переливы в цветах школы: небо #D8EBF9, солнце #FCC41C, синий #2A70B4
+    'news': (INK, 'dark'), 'concept': ('#D8EBF9,#FFF1C2', 'light'), 'about': ('#FFF4D6,#DCEEFF', 'light'),
+    'programs': (INK, 'dark'), 'food': ('#CFE6FB,#FFF1C2', 'light'), 'teachers': (INK, 'dark'),
+    'safety': ('#FFEDB3,#DCEEFF', 'light'), 'extra': (INK, 'dark'), 'transfer': ('#DCEEFF,#FFE7A0', 'light'),
+    'summer': (INK, 'dark'), 'reviews': ('#FFF1C2,#CFE6FB', 'light'), 'admission': (INK, 'dark'),
+    'gallery': ('#0A2C55,#08172C', 'dark'), 'act-night': ('#08172C,#08172C', 'dark'), 'signup': ('#08172C,#08172C', 'dark'),
 }  # небо и тон предыдущей главы — главы собираются по порядку страницы
 
 
@@ -228,7 +228,7 @@ def hero():
     </div>
     <ol class="wrap rhero__steps" aria-label="Как поступить">{steps}</ol>
   </div>'''
-    return section('top', 'Начало', body, '#EADCFF,#FFD9E8', 'light', 'rhero')
+    return section('top', 'Начало', body, '#D8EBF9,#FFF1C2', 'light', 'rhero')
 
 
 def news():
@@ -838,7 +838,7 @@ def page():
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Ай Про · частная школа полного дня в Ялте</title>
 <meta name="description" content="{e(desc)}">
-<meta name="theme-color" content="#0F0F12">
+<meta name="theme-color" content="#0A2C55">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="ru_RU">
 <meta property="og:site_name" content="Ай Про · IPROSCHOOL">
