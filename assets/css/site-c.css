@@ -75,8 +75,9 @@ html.modal-open .ask.dock-cta{opacity:0;pointer-events:none}
 /* ---------- первый экран: солнце, как в версии A, затем карточка, как у Рокета ---------- */
 /* 1-я половина прокрутки — сценарий A из site.js (круг-солнце раскрывается в видео, солнце улетает в логотип);
    2-я — site-c.js: окно с видео сжимается в стеклянную карточку и уходит вниз, на чёрном появляются шаги */
-.hero.rhero{height:360vh;background:var(--ink)}
-.hero .pin{background:radial-gradient(60% 45% at 50% 56%,rgba(252,196,28,.2),rgba(252,196,28,0) 70%),var(--ink)}
+.hero.rhero{height:360vh;background:#0A2C55}
+/* синий школы, как в версии A: глубокий перелив с солнечным светом в центре и голубым внизу */
+.hero .pin{background:radial-gradient(60% 45% at 50% var(--sunY,50%),rgba(252,196,28,.28),rgba(252,196,28,0) 70%),radial-gradient(100% 55% at 50% 100%,rgba(42,112,180,.6),rgba(42,112,180,0) 72%),linear-gradient(180deg,#0A2C55 0%,#0B3262 55%,#0F3F75 100%)}
 .hero__orb text{font:600 7.2px var(--mono);letter-spacing:.02em}
 .hero__eyebrow{font-family:var(--mono);font-size:14px;text-transform:uppercase;letter-spacing:.04em}
 .hero__h{font-family:var(--display);font-weight:600;letter-spacing:-.03em;text-transform:lowercase;opacity:calc(var(--hop,1) * (1 - var(--tb,0)))}
@@ -91,7 +92,7 @@ html.modal-open .ask.dock-cta{opacity:0;pointer-events:none}
 .hero__gloss{position:absolute;inset:0;z-index:2;border-radius:inherit;border:1px solid rgba(255,255,255,.5);background:linear-gradient(115deg,rgba(255,255,255,.34) 0%,rgba(255,255,255,.06) 34%,rgba(255,255,255,0) 50%,rgba(255,255,255,.1) 100%);opacity:var(--t,0);pointer-events:none}
 .hero__win video::-webkit-media-controls,.hero__win video::-webkit-media-controls-start-playback-button,.hero__win video::-webkit-media-controls-overlay-play-button{display:none!important;-webkit-appearance:none}
 /* место карточки: невидимая разметка, по которой скрипт считает, куда сжимается видео */
-.rhero__slot{position:absolute;left:50%;top:63%;width:min(64vw,420px,36svh);aspect-ratio:3/4;translate:-50% -50%;visibility:hidden;pointer-events:none}
+.rhero__slot{position:absolute;left:50%;top:calc(100svh * .63);width:min(64vw,420px,36svh);aspect-ratio:3/4;translate:-50% -50%;visibility:hidden;pointer-events:none}
 .rhero__mark{position:absolute;left:8%;bottom:6%;width:min(96px,40%);height:auto;filter:drop-shadow(0 2px 10px rgba(0,0,0,.4))}
 .rhero__chip{position:absolute;left:14px;top:14px;padding:8px 12px;border-radius:999px;background:rgba(12,12,16,.45);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.25);color:#fff;font:600 11px/1 var(--mono);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
 .rhero__steps{position:absolute;z-index:2;left:0;right:0;top:calc(80px + env(safe-area-inset-top,0px));display:grid;gap:14px;margin:0;list-style:none;pointer-events:none}
@@ -208,7 +209,7 @@ html.modal-open .ask.dock-cta{opacity:0;pointer-events:none}
 
 /* ---------- компьютер ---------- */
 @media (min-width:900px){
-  .rhero__slot{left:72%;top:56%;width:min(34vw,520px);aspect-ratio:4/5}
+  .rhero__slot{left:72%;top:calc(100svh * .56);width:min(34vw,520px);aspect-ratio:4/5}
   .rhero__steps{left:6vw;right:auto;width:min(40vw,560px);top:50%;translate:0 -50%;gap:34px}
   .rstep b{font-size:17px}
   .rstep small{font-size:14px}
@@ -252,20 +253,20 @@ html.a11y .ask.dock-cta{background:#000;color:#fff}
 .th{text-align:left}
 .th__t{font-size:clamp(64px,17vw,200px);margin-left:0}
 .nightseq .pin::after{background:linear-gradient(180deg,#0C0C10 0%,rgba(12,12,16,.8) 35%,rgba(12,12,16,0))}
-.night__cta{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+.night__cta{bottom:calc(96px + var(--vbar) + env(safe-area-inset-bottom,0px))}
 .num b{font-size:clamp(26px,9vw,88px)}
 .num:last-child b{font-size:clamp(14px,4.3vw,36px)}
 
 /* низкие телефоны: карточка меньше и ниже, шаги плотнее */
 @media (max-width:899px) and (max-height:800px){
-  .rhero__slot{top:69%;width:min(60vw,32svh)}
+  .rhero__slot{top:calc(100svh * .69);width:min(60vw,32svh)}
   .rhero__steps{gap:8px;top:calc(72px + env(safe-area-inset-top,0px))}
   .rstep{gap:5px}
   .rstep__i{width:38px;height:38px}
   .rstep__i .sun{width:22px;height:22px}
 }
 @media (max-width:899px) and (max-height:700px){
-  .rhero__slot{top:66%;width:min(52vw,27svh)}
+  .rhero__slot{top:calc(100svh * .66);width:min(52vw,27svh)}
 }
 
 /* ---------- все заголовки глав — по центру, как у Рокета ---------- */
@@ -284,3 +285,21 @@ html.a11y .ask.dock-cta{background:#000;color:#fff}
 html:not(.js) .hd{background:rgba(12,12,16,.9)}
 @media (prefers-reduced-motion: reduce){.hero__h .r1{top:24%}}
 html.a11y .hero__h .r1,html:not(.js) .hero__h .r1{top:24%}
+
+/* ---------- iPhone: закреплённые сцены — на весь большой экран, под панель Safari ----------
+   Высота 100svh кончалась над панелью браузера, и когда панель сжимается при прокрутке, снизу была видна полоса фона главы.
+   Теперь сцена уходит под панель (100lvh), а всё, что прижато к низу сцены, приподнято на высоту панели (--vbar). */
+:root{--vbar:0px}
+@supports (height:100lvh){:root{--vbar:calc(100lvh - 100svh)}@media (prefers-reduced-motion:no-preference){html.js:not(.a11y) .pin{height:100lvh}}}
+html.a11y{--vbar:0px}
+.estate__arrive{bottom:calc(92px + var(--vbar) + env(safe-area-inset-bottom,0px))}
+/* первый экран: «а вам спокойно» — выше кнопки записи; подсказку «Листайте» заменяет сама кнопка */
+.hero__hint{display:none}
+@media (prefers-reduced-motion:no-preference){
+  html.js:not(.a11y) .hero__h .r1{top:calc(76px + env(safe-area-inset-top,0px) + 4svh)}
+  html.js:not(.a11y) .hero__h .r2{bottom:calc(var(--vbar) + 100px + env(safe-area-inset-bottom,0px) + 3svh)}
+}
+@media (prefers-reduced-motion:no-preference) and (min-width:900px){
+  html.js:not(.a11y) .hero__h .r1{top:calc(100px + 4svh)}
+  html.js:not(.a11y) .hero__h .r2{bottom:calc(var(--vbar) + 110px + 2svh)}
+}

@@ -326,8 +326,8 @@
           /* в версии C у сцены две части: data-phase — доля прокрутки на солнце, дальше видео уходит в карточку (site-c.js) */
           var pAll = sm.hero, split = parseFloat(hero.dataset.phase) || 1;
           var p = Math.min(1, pAll / split), open = ease(seg(p, 0, .4)), fly = ease(seg(p, .03, .62)), shrink = seg(p, .03, .62);
-          var r0 = Math.min(vw, vh) * (wide ? .155 : .23), r1 = Math.hypot(vw, vh) * .62;
-          var R = lerp(r0, r1, open), S = r0 / .27, cx = vw / 2, cy = vh * .56;
+          var r0 = Math.min(vw, wide ? vh : vh * .5) * (wide ? .155 : .23), r1 = Math.hypot(vw, vh) * .62;
+          var sunY = wide ? .56 : vh < 720 ? .48 : .5, R = lerp(r0, r1, open), S = r0 / .27, cx = vw / 2, cy = vh * sunY;  /* на телефоне солнце чуть выше — между строк фразы */
           if (logoBox) {  /* солнце логотипа: центр и размер вместе с лучами */
             var tx = logoBox.left + logoBox.width * .772, ty = logoBox.top + logoBox.height * .592, ts = logoBox.width * .47;
             cx = lerp(cx, tx, fly); cy = lerp(cy, ty, fly); S = lerp(S, ts, shrink);
@@ -338,7 +338,8 @@
           hs.setProperty('--cx', cx.toFixed(1) + 'px');
           hs.setProperty('--cy', cy.toFixed(1) + 'px');
           hs.setProperty('--mx', (vw / 2).toFixed(1) + 'px');
-          hs.setProperty('--my', (vh * .56).toFixed(1) + 'px');
+          hs.setProperty('--my', (vh * sunY).toFixed(1) + 'px');
+          hs.setProperty('--sunY', (sunY * 100) + '%');
           hs.setProperty('--tint', (.36 * (1 - seg(p, 0, .4))).toFixed(3));
           hs.setProperty('--ringop', (1 - seg(p, .6, .66)).toFixed(3));
           hs.setProperty('--winop', '1');

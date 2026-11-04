@@ -234,7 +234,9 @@ def hero():
     <a class="hero__hint" href="#news" data-go="news">Листайте</a>
     <ol class="wrap rhero__steps" aria-label="Как поступить">{steps}</ol>
   </div>'''
-    return section('top', 'Начало', body, INK, 'dark', 'hero rhero', ' data-phase=".45"')
+    html = section('top', 'Начало', body, '#0A2C55,#0F3F75', 'dark', 'hero rhero', ' data-phase=".45"')
+    _SKY['tone'] = 'navy'  # первый экран синий, как в A: новости (чёрные) заходят на него дугой
+    return html
 
 
 def news():
