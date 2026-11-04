@@ -138,13 +138,13 @@ def mix(a, b, t):
 
 
 _SKY = {'prev': None, 'tone': None}
-INK = '#08172C,#0A2C55'  # глубокий синий школы
+INK = '#0C0C10,#0C0C10'  # почти чёрный, как у Рокета; цвета школы — в акцентах и переливах
 C_SKY = {  # глава: (небо, тон) — переливы в цветах школы: небо #D8EBF9, солнце #FCC41C, синий #2A70B4
     'news': (INK, 'dark'), 'concept': ('#D8EBF9,#FFF1C2', 'light'), 'about': ('#FFF4D6,#DCEEFF', 'light'),
     'programs': (INK, 'dark'), 'food': ('#CFE6FB,#FFF1C2', 'light'), 'teachers': (INK, 'dark'),
     'safety': ('#FFEDB3,#DCEEFF', 'light'), 'extra': (INK, 'dark'), 'transfer': ('#DCEEFF,#FFE7A0', 'light'),
     'summer': (INK, 'dark'), 'reviews': ('#FFF1C2,#CFE6FB', 'light'), 'admission': (INK, 'dark'),
-    'gallery': ('#0A2C55,#08172C', 'dark'), 'act-night': ('#08172C,#08172C', 'dark'), 'signup': ('#08172C,#08172C', 'dark'),
+    'gallery': (INK, 'dark'), 'act-night': (INK, 'dark'), 'signup': (INK, 'dark'),
 }  # небо и тон предыдущей главы — главы собираются по порядку страницы
 
 

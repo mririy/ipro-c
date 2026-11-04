@@ -208,7 +208,7 @@
 
   var estate = $('.estate'), estatePin = estate && $('.pin', estate), sDay = estate && new Seq(estate, '#ffffff');
   var pins = estate ? $$('.pins li', estate) : [], pinsDirty = true;
-  var night = $('.nightseq'), nightPin = night && $('.pin', night), sNight = night && new Seq(night, '#0A121C');
+  var night = $('.nightseq'), nightPin = night && $('.pin', night), sNight = night && new Seq(night, '#0C0C10');
   var seqs = [sDay, sNight].filter(Boolean);
   watch(seqs.map(function (s) { return s.el; }), { rootMargin: '150% 0px' }, function (el, on) {
     if (!on || still()) return;
