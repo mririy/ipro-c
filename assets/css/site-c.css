@@ -25,11 +25,15 @@ body{font-synthesis-weight:auto}
 #reviews{--bx1:50%;--by1:8%;--bx2:85%;--by2:90%}
 .sc--light{--fg:#0A2C55;--muted:#22364F;--line:rgba(10,44,85,.14);--icon:#0A2C55;--chip:transparent;--chip-fg:inherit}
 .sc--dark{--fg:#fff;--muted:rgba(255,255,255,.78);--line:rgba(255,255,255,.14);--icon:#FCC41C;--chip:transparent;--chip-fg:inherit}
-.sc.is-cut,.sc + .sc.is-cut{--band:0px;margin-top:-80px;border-radius:50% 50% 0 0/80px 80px 0 0}
-.sc.is-cut:not(.hero):not(.night):not(.rhero){padding-top:clamp(120px,15vw,180px)}
-.sc.sc--dark.is-cut{border-radius:50% 50% 0 0/80px 80px 0 0}
+/* дуга: следующая глава заходит на предыдущую на высоту дуги (--arc), углы показывают цвет предыдущей главы.
+   Чтобы дуга не прятала низ предыдущей главы, у неё снизу добавлено столько же места. */
+:root{--arc:80px}
 .sc + .sc{margin-top:-1px}
-.sc.is-cut + .sc{margin-top:-1px}
+.sc.is-cut,.sc + .sc.is-cut,.sc.is-cut + .sc.is-cut{--band:0px;margin-top:calc(var(--arc) * -1);border-radius:50% 50% 0 0/var(--arc) var(--arc) 0 0}
+.sc.is-cut:not(.hero):not(.night):not(.rhero){padding-top:clamp(120px,15vw,180px)}
+.sc:not(.rhero):has(+ .sc.is-cut){padding-bottom:calc(clamp(56px,8vw,110px) + var(--arc))}
+.about:has(+ .sc.is-cut){padding-bottom:var(--arc)}
+@media (max-width:699px){:root{--arc:56px}}
 
 /* ---------- типографика ---------- */
 .h2,.h3,.th__t,.lvl__t,.dirc__cap b,.alb__cap b,.news__h,.pm__t,.price__h,.estate__arrive b,.night__bye{text-transform:lowercase}
@@ -234,7 +238,8 @@ html.a11y .rhero__txt,html.a11y .rhero__steps{position:relative;top:auto;opacity
 html.a11y .rstep{opacity:1;translate:none}
 html.a11y .rstep b,html.a11y .rstep small{background:none;color:#000}
 html.a11y .h2 em,html.a11y .h3 em,html.a11y .th__t,html.a11y .num b,html.a11y .night__bye,html.a11y .estate__arrive b{background:none;color:#000}
-html.a11y .sc.is-cut{border-radius:0;clip-path:none;margin-top:0}
+html.a11y .sc.is-cut,html.a11y .sc.is-cut + .sc.is-cut,html.a11y .sc + .sc.is-cut{border-radius:0;clip-path:none;margin-top:0}
+html.a11y :root,html.a11y{--arc:0px}
 html.a11y .ask.dock-cta{background:#000;color:#fff}
 
 /* ---------- длинные слова и крупные часы на узком экране ---------- */
