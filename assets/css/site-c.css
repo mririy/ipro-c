@@ -294,7 +294,7 @@ html.a11y .hero__h .r1,html:not(.js) .hero__h .r1{top:24%}
 html.a11y{--vbar:0px}
 .estate__arrive{bottom:calc(92px + var(--vbar) + env(safe-area-inset-bottom,0px))}
 /* первый экран: «а вам спокойно» — выше кнопки записи; подсказку «Листайте» заменяет сама кнопка */
-.hero__hint{display:none}
+.hero__hint{bottom:calc(18px + var(--vbar) + env(safe-area-inset-bottom,0px))}
 @media (prefers-reduced-motion:no-preference){
   html.js:not(.a11y) .hero__h .r1{top:calc(76px + env(safe-area-inset-top,0px) + 4svh)}
   html.js:not(.a11y) .hero__h .r2{bottom:calc(var(--vbar) + 100px + env(safe-area-inset-bottom,0px) + 3svh)}
@@ -304,12 +304,17 @@ html.a11y{--vbar:0px}
   html.js:not(.a11y) .hero__h .r2{bottom:calc(var(--vbar) + 110px + 2svh)}
 }
 
-/* ---------- iPhone (Safari 26): цвет полос браузера сверху и снизу ----------
-   Safari красит полосу у часов и полосу с адресом в цвет фона страницы или закреплённого элемента у края экрана
-   (theme-color больше не работает). Две тонкие полоски у краёв подсказывают ему цвет той главы, что сейчас у края,
-   и полосы браузера сливаются со страницей. Цвет ставит site-c.js. */
-.edge{display:none;position:fixed;left:0;right:0;z-index:59;height:6px;pointer-events:none;background-color:var(--edge,#0A2C55);transition:background-color .25s}
-.edge--t{top:0;height:max(6px,env(safe-area-inset-top,0px))}
-html.ios .edge{display:block}
-.edge--b{bottom:0}
+/* ---------- iPhone (Safari 26): прозрачные полосы браузера сверху и снизу ----------
+   Safari красит полосу у часов и полосу с адресом в цвет закреплённого элемента у края экрана (в пределах 3–4 px,
+   шириной от 80 %) — у нас это закреплённые сцены (первый экран, особняк, ночь), и цвет потом «залипает».
+   Две прозрачные полоски поверх всего у самых краёв перехватывают эту проверку, и полосы браузера остаются стеклом,
+   сквозь которое видна страница (приём из fantinel.dev/blog/safari-floating-url-bar-background). */
+.edge{display:none;position:fixed;left:0;right:0;z-index:999;height:6px;pointer-events:none;background:transparent}
+.edge--t{top:-2px}
+.edge--b{bottom:-2px}
+@supports (-webkit-touch-callout:none){.edge{display:block}}
 html.a11y .edge{display:none}
+
+/* кнопка записи появляется плавно, когда первый экран пролистан до конца (класс ставит site-c.js) */
+.ask.dock-cta{transition:opacity .5s var(--ease),transform .5s var(--ease)}
+html.cta-wait .ask.dock-cta{opacity:0;transform:translateY(28px);pointer-events:none}
