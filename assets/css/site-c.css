@@ -382,7 +382,11 @@ html.t-nohd .hd,html.t-nocta .ask{display:none!important}
   html.ios-bars.js:not(.a11y) .nightseq{background:#0C0C10}
   html.ios-bars.js:not(.a11y) .lvl{position:relative;top:0}
   html.ios-bars.js:not(.a11y) .lvl.is-stk{position:sticky;top:calc(78px + env(safe-area-inset-top,0px))}
-  html.ios-bars.js:not(.a11y) .ask.dock-cta{top:calc(100svh - 56px + 4px + var(--drop,0px));bottom:auto;transition:opacity .45s var(--ease),transform .7s cubic-bezier(.2,1.25,.3,1),top .35s var(--ease)}
+  /* кнопка — у нижнего края области страницы: Safari сам опускает её, когда панель сжимается при прокрутке.
+     Ниже этого края Safari обрезает закреплённые элементы, поэтому тень у кнопки — только вверх */
+  html.ios-bars.js:not(.a11y) .ask.dock-cta{top:auto;bottom:8px}
+  html.ios-bars.js:not(.a11y) .ask.dock-cta::before{box-shadow:0 -6px 14px -4px rgba(0,0,0,.22)}
+  html.ios-bars.js:not(.a11y).cta-light .ask.dock-cta::before{box-shadow:0 -6px 14px -4px rgba(10,44,85,.25)}
 }
 @media (prefers-reduced-motion:no-preference) and (max-width:899px){
   html.ios-bars.js:not(.a11y) .hero__h .r1{top:calc(70px + 3svh)}
@@ -392,4 +396,4 @@ html.t-nohd .hd,html.t-nocta .ask{display:none!important}
 }
 @media (prefers-reduced-motion:no-preference) and (max-width:899px) and (max-height:800px){html.ios-bars.js:not(.a11y) .rhero__slot{top:66%}}
 @media (prefers-reduced-motion:no-preference) and (max-width:899px) and (max-height:700px){html.ios-bars.js:not(.a11y) .rhero__slot{top:68%}}
-@media (prefers-reduced-motion:no-preference) and (min-width:900px){html.ios-bars.js:not(.a11y) .ask.dock-cta{top:calc(100svh - 60px + 4px + var(--drop,0px))}html.ios-bars.js:not(.a11y) .lvl.is-stk{top:96px}}
+@media (prefers-reduced-motion:no-preference) and (min-width:900px){html.ios-bars.js:not(.a11y) .lvl.is-stk{top:96px}}

@@ -97,21 +97,6 @@
     addEventListener('resize', function () { cards.forEach(function (c, i) { c.classList.remove('is-stk'); c.style.top = ''; st[i] = 'flow'; S[i] = stickyTop(c); }); kickCards(); });
     kickCards();
 
-    /* кнопка записи: когда при прокрутке панель Safari сжимается, кнопка опускается ближе к низу
-       (но не под саму панель — иначе Safari зальёт её цветом) */
-    var probe = document.createElement('i');
-    probe.style.cssText = 'position:absolute;top:0;left:0;width:1px;height:100svh;visibility:hidden;pointer-events:none';
-    document.body.appendChild(probe);
-    var dropNow = -1;
-    function placeCta() {
-      var svh = probe.offsetHeight, h = window.visualViewport ? visualViewport.height : innerHeight;
-      var d = Math.round(Math.max(0, Math.min(70, (h - svh) * .62)));
-      if (d !== dropNow) { dropNow = d; root.style.setProperty('--drop', d + 'px'); }
-    }
-    addEventListener('scroll', placeCta, { passive: true });
-    addEventListener('resize', placeCta);
-    if (window.visualViewport) visualViewport.addEventListener('resize', placeCta);
-    placeCta();
   }
 
   /* цвет кнопки записи — по главе под ней: на светлой синяя, на тёмной белая */
