@@ -9,7 +9,6 @@
   /* для проверки полос Safari: ?nohd — без шапки, ?nocta — без кнопки записи (страница bars/) */
   if (/[?&]nohd\b/.test(location.search)) root.classList.add('t-nohd');
   if (/[?&]nocta\b/.test(location.search)) root.classList.add('t-nocta');
-  if (/[?&]sz\b/.test(location.search)) root.classList.add('t-sz');
   var pin = document.querySelector('.hero .rhero__pin'), slot = pin && pin.querySelector('.rhero__slot');
   var clamp = function (v) { return Math.max(0, Math.min(1, v)); };
   var seg = function (p, a, b) { return clamp((p - a) / (b - a)); };
@@ -68,6 +67,36 @@
   function markTop() { var on = !!topSec && topSec.getBoundingClientRect().bottom > 2; if (on !== atTop) { atTop = on; root.classList.toggle('at-top', on); } }
   addEventListener('scroll', markTop, { passive: true });
   markTop();
+
+  /* iPhone (Safari 26): под полосами браузера не должно оказываться закреплённых элементов — см. site-c.css */
+  var iosBars = (window.CSS && CSS.supports && CSS.supports('-webkit-touch-callout', 'none')) || /[?&]ios\b/.test(location.search);
+  if (iosBars) {
+    root.classList.add('ios-bars');
+    /* карточки программ: обычный блок → «липнет», когда подъехала к своему месту → снова обычный блок со сдвигом,
+       когда стопка уезжает вверх. Переключения — там, где все три положения совпадают, поэтому без скачков. */
+    var cards = [].slice.call(document.querySelectorAll('.stack .lvl')), S = [], st = [], cTick = false;
+    var stickyTop = function (c) { var t = c.style.top, had = c.classList.contains('is-stk'); c.style.top = ''; c.classList.add('is-stk'); var v = parseFloat(getComputedStyle(c).top) || 0; if (!had) c.classList.remove('is-stk'); c.style.top = t; return v; };
+    cards.forEach(function (c, i) { S[i] = stickyTop(c); st[i] = 'flow'; });
+    var calmNow = function () { return root.classList.contains('a11y') || matchMedia('(prefers-reduced-motion: reduce)').matches; };
+    function cardsFrame() {
+      cTick = false;
+      if (calmNow()) return;
+      cards.forEach(function (c, i) {
+        var top = c.getBoundingClientRect().top, s = S[i];
+        if (st[i] === 'flow' && top <= s + 80 && top > s - 400) { c.classList.add('is-stk'); st[i] = 'stk'; }
+        else if (st[i] === 'stk' && top > s + 80) { c.classList.remove('is-stk'); st[i] = 'flow'; }
+        else if (st[i] === 'stk' && top < s - .5) {
+          c.classList.remove('is-stk');
+          var nat = c.getBoundingClientRect().top;
+          c.style.top = (top - nat).toFixed(1) + 'px'; st[i] = 'after';
+        } else if (st[i] === 'after' && top >= s) { c.style.top = ''; c.classList.add('is-stk'); st[i] = 'stk'; }
+      });
+    }
+    var kickCards = function () { if (!cTick) { cTick = true; requestAnimationFrame(cardsFrame); } };
+    addEventListener('scroll', kickCards, { passive: true });
+    addEventListener('resize', function () { cards.forEach(function (c, i) { c.classList.remove('is-stk'); c.style.top = ''; st[i] = 'flow'; S[i] = stickyTop(c); }); kickCards(); });
+    kickCards();
+  }
 
   /* кнопка записи внизу экрана прячется у самой формы */
   var sg = document.getElementById('signup');

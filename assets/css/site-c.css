@@ -85,7 +85,7 @@ html.a11y .hd{border-radius:0;left:0;right:0;top:0}
 /* ---------- кнопка записи внизу экрана ---------- */
 .ask.dock-cta,.ask.dock-cta.is-hidden{left:50%;right:auto;translate:-50% 0;bottom:calc(16px + env(safe-area-inset-bottom,0px));height:56px;padding:0 30px;gap:0;background:transparent;color:#0A2C55;font:600 13px/1 var(--mono);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;text-decoration:none;border:0;box-shadow:none;opacity:1;transform:none;pointer-events:auto;isolation:isolate}
 .ask.dock-cta::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;background:#fff;border:1px solid rgba(10,44,85,.08);box-shadow:0 14px 40px rgba(0,0,0,.3)}
-html.at-signup .ask.dock-cta{opacity:0;transform:translateY(20px);pointer-events:none}
+html.at-signup .ask.dock-cta{opacity:0;transform:scale(.18);pointer-events:none}  /* уменьшается на месте: не уезжает под панель Safari */
 html.modal-open .ask.dock-cta{opacity:0;pointer-events:none}
 
 /* ---------- первый экран: солнце, как в версии A, затем карточка, как у Рокета ---------- */
@@ -348,8 +348,22 @@ html.t-nohd .hd,html.t-nocta .ask{display:none!important}
 .pin::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none}
 .nightseq .pin::before{background:#0C0C10}
 .lvl{background:transparent}
-/* проверка (?sz): закреплённые сцены — между полосой у часов и панелью Safari, кнопка записи — над панелью */
-html.t-sz{--po:0px!important;--vbar:0px!important}
-html.t-sz .pin{top:calc(env(safe-area-inset-top,0px) + 8px)!important;height:calc(100svh - env(safe-area-inset-top,0px) - 16px)!important}
-html.t-sz .hero.rhero{margin-top:0!important;padding-top:calc(env(safe-area-inset-top,0px) + 8px)}
-html.t-sz .ask.dock-cta{top:calc(100svh - 76px);bottom:auto}
+/* ---------- iPhone (Safari 26): полосы браузера — стекло (найдено тестами на страницах bars/) ----------
+   Safari заливает полосу у часов и панель с адресом сплошным цветом, как только под ними оказывается закреплённый
+   элемент (sticky/fixed): кнопка записи у нижнего края, закреплённые сцены, «липкие» карточки программ —
+   в том числе когда такой элемент просто проезжает под полосой. Поэтому на iPhone (класс ios-bars ставит site-c.js):
+   — сцены (первый экран, особняк, ночь) — неподвижный слой между полосами, а глава открывает его как окно (clip-path);
+   — карточки программ «липнут» только пока стоят между полосами, остальное время едут как обычный блок (site-c.js);
+   — кнопка записи — над панелью Safari, а не под ней. */
+@media (prefers-reduced-motion:no-preference){
+  html.ios-bars.js:not(.a11y){--po:0px;--vbar:0px;--pt:calc(env(safe-area-inset-top,0px) + 8px);--pb:20px}
+  html.ios-bars.js:not(.a11y) .pin{position:fixed!important;left:0;right:0;top:var(--pt)!important;height:calc(100svh - var(--pt) - var(--pb))!important}
+  html.ios-bars.js:not(.a11y) .hero.rhero,html.ios-bars.js:not(.a11y) .estate,html.ios-bars.js:not(.a11y) .nightseq{clip-path:inset(0)}
+  html.ios-bars.js:not(.a11y) .hero.rhero{margin-top:0}
+  html.ios-bars.js:not(.a11y) .estate{background:#fff}
+  html.ios-bars.js:not(.a11y) .nightseq{background:#0C0C10}
+  html.ios-bars.js:not(.a11y) .lvl{position:relative;top:0}
+  html.ios-bars.js:not(.a11y) .lvl.is-stk{position:sticky;top:calc(78px + env(safe-area-inset-top,0px))}
+  html.ios-bars.js:not(.a11y) .ask.dock-cta{top:calc(100svh - 56px - 20px);bottom:auto}
+}
+@media (prefers-reduced-motion:no-preference) and (min-width:900px){html.ios-bars.js:not(.a11y) .ask.dock-cta{top:calc(100svh - 60px - 20px)}html.ios-bars.js:not(.a11y) .lvl.is-stk{top:96px}}
