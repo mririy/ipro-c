@@ -18,31 +18,26 @@ body{font-synthesis-weight:auto}
 
 /* ---------- главы: ровный перелив, границы — плавной дугой, как у Рокета ---------- */
 .sc{background:var(--s1)}
-/* ---------- цвета глав: у каждой главы свой цвет, но из одной семьи ----------
-   Основа — цвета школы: синий #0A2C55, небо #D8EBF9, солнце #FCC41C, голубой #2A70B4.
-   К ним — несколько тёплых «детских» оттенков, всегда приглушённых: персик, мята, абрикос.
-   Насыщенных глав мало (солнечная «Педагоги», голубая «Кружки»), остальные — светлые пастели и глубокий синий;
-   на каждой — два мягких пятна (--g1, --g2), чтобы фон был живым, а не плоским. */
+/* ---------- цвета глав: спокойно и современно ----------
+   Две основы — глубокий синий школы и светлые «бумажные» фоны (тёплый и холодный), солнце школы — только в акцентах
+   и мягким светом. Светлые главы чередуют тёплый и холодный оттенок, тёмные — синий вместо чёрного. */
 .sc:not(.hero){background:radial-gradient(60% 45% at var(--bx1,12%) var(--by1,16%),var(--g1,transparent),transparent 70%),radial-gradient(65% 50% at var(--bx2,88%) var(--by2,74%),var(--g2,transparent),transparent 70%),var(--bg,#F4F8FD)}
-#news{--bg:#0D2F5C;--g1:rgba(42,112,180,.55);--g2:rgba(252,196,28,.14);--bx1:88%;--by1:10%;--bx2:8%;--by2:90%}
-#concept{--bg:#FFF7E3;--g1:rgba(252,196,28,.38);--g2:rgba(42,112,180,.14)}
-#about{--bg:#EEF6FE;--g1:rgba(252,196,28,.26);--g2:rgba(42,112,180,.2);--bx1:85%;--by1:8%;--bx2:10%;--by2:60%}
-#programs{--bg:#0A2C55;--g1:rgba(42,112,180,.5);--g2:rgba(252,196,28,.12);--bx1:12%;--by1:6%;--bx2:90%;--by2:60%}
-#food{--bg:#FFF0E6;--g1:rgba(255,150,105,.32);--g2:rgba(252,196,28,.3);--bx1:80%;--by1:20%;--bx2:15%;--by2:85%}
-#teachers{--bg:#FFD54F;--g1:rgba(255,255,255,.55);--g2:rgba(255,160,40,.35);--bx1:20%;--by1:12%;--bx2:85%;--by2:80%}
-#safety{--bg:#E9F6F1;--g1:rgba(90,195,155,.28);--g2:rgba(42,112,180,.16);--bx1:15%;--by1:70%;--bx2:85%;--by2:15%}
-#extra{--bg:#2A70B4;--g1:rgba(255,255,255,.2);--g2:rgba(252,196,28,.3);--bx1:85%;--by1:25%;--bx2:10%;--by2:85%}
-#transfer{--bg:#E6F1FF;--g1:rgba(42,112,180,.22);--g2:rgba(252,196,28,.28);--bx1:88%;--by1:30%;--bx2:10%;--by2:80%}
-#summer{--bg:#FFE4C7;--g1:rgba(255,138,76,.32);--g2:rgba(252,196,28,.42);--bx1:15%;--by1:20%;--bx2:85%;--by2:75%}
-#reviews{--bg:#FFF8EA;--g1:rgba(252,196,28,.26);--g2:rgba(42,112,180,.18);--bx1:50%;--by1:8%;--bx2:85%;--by2:90%}
-#admission{--bg:#0A2C55;--g1:rgba(42,112,180,.45);--g2:rgba(252,196,28,.12);--bx1:85%;--by1:10%}
-#gallery{--bg:#0D2F5C;--g1:rgba(42,112,180,.5);--g2:rgba(252,196,28,.1);--bx1:80%;--by1:15%}
-#act-night{--bg:#0C0C10}
-#signup{--bg:#0A2C55;--g1:rgba(42,112,180,.45);--g2:rgba(252,196,28,.14);--bx1:15%;--by1:10%;--bx2:85%;--by2:85%}
-/* на голубой главе «Кружки» акценты — солнечные, на солнечной «Педагоги» — синие */
-#extra .h2 em,#extra .h3 em,#extra .th__t{background-image:linear-gradient(90deg,#FFD54A,#FFF1C2)}
-#extra{--muted:rgba(255,255,255,.88);--icon:#FFE07A}
-#teachers{--muted:#2B3B52}
+.sc--light{--g1:rgba(252,196,28,.16);--g2:rgba(42,112,180,.09)}
+.sc--dark{--bg:#0A2C55;--g1:rgba(42,112,180,.38);--g2:rgba(252,196,28,.07)}
+/* светлые: тёплый #FBF7EF, холодный #F2F7FD, сливочный (с солнечным светом) #FFF8E6 */
+#concept,#food,#summer{--bg:#FBF7EF}
+#about,#safety,#transfer{--bg:#F2F7FD}
+#teachers,#reviews{--bg:#FFF8E6;--g1:rgba(252,196,28,.24)}
+#about{--bx1:85%;--by1:8%;--bx2:10%;--by2:60%}
+#food{--bx1:80%;--by1:20%;--bx2:15%;--by2:85%}
+#safety{--bx1:15%;--by1:70%;--bx2:85%;--by2:15%}
+#transfer{--bx1:88%;--by1:30%;--bx2:10%;--by2:80%}
+#reviews{--bx1:50%;--by1:8%;--bx2:85%;--by2:90%}
+/* тёмные: синий школы; новости и галерея — на тон глубже */
+#news,#gallery{--bg:#08264A}
+#programs{--bx1:12%;--by1:6%;--bx2:90%;--by2:60%}
+#extra{--bx1:85%;--by1:25%}
+#act-night{--bg:#0C0C10;--g1:transparent;--g2:transparent}
 .sc--light{--fg:#0A2C55;--muted:#22364F;--line:rgba(10,44,85,.14);--icon:#0A2C55;--chip:transparent;--chip-fg:inherit}
 .sc--dark{--fg:#fff;--muted:rgba(255,255,255,.78);--line:rgba(255,255,255,.14);--icon:#FCC41C;--chip:transparent;--chip-fg:inherit}
 /* дуга: следующая глава заходит на предыдущую на высоту дуги (--arc), углы показывают цвет предыдущей главы.
@@ -286,7 +281,7 @@ html.a11y .ask.dock-cta{color:#fff!important}html.a11y .ask.dock-cta::before{bac
 .h2--long{font-size:clamp(20px,5.7vw,64px)}
 .th{text-align:left}
 .th__t{font-size:clamp(64px,17vw,200px);margin-left:0}
-.nightseq .pin::after{background:linear-gradient(180deg,#0D2F5C 0%,rgba(13,47,92,.75) 30%,rgba(12,12,16,0))}  /* сверху — цвет галереи: вечер наступает плавно */
+.nightseq .pin::after{background:linear-gradient(180deg,#08264A 0%,rgba(8,38,74,.75) 30%,rgba(12,12,16,0))}  /* сверху — цвет галереи: вечер наступает плавно */
 .night__cta{bottom:calc(96px + var(--vbar) + var(--po) + env(safe-area-inset-bottom,0px))}
 .num b{font-size:clamp(26px,9vw,88px)}
 .num:last-child b{font-size:clamp(14px,4.3vw,36px)}

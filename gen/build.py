@@ -139,13 +139,12 @@ def mix(a, b, t):
 
 _SKY = {'prev': None, 'tone': None}
 INK = '#0C0C10,#0C0C10'  # почти чёрный, как у Рокета; цвета школы — в акцентах и переливах
-C_SKY = {  # глава: (основной цвет главы, тон текста). Сами фоны — в site-c.css (#id { --bg, --g1, --g2 }):
-    # спокойная основа школы (синий, небо, солнце) и несколько тёплых детских оттенков — персик, мята, абрикос
-    'news': ('#0D2F5C,#0D2F5C', 'dark'), 'concept': ('#FFF7E3,#FFF7E3', 'light'), 'about': ('#EEF6FE,#EEF6FE', 'light'),
-    'programs': ('#0A2C55,#0A2C55', 'dark'), 'food': ('#FFF0E6,#FFF0E6', 'light'), 'teachers': ('#FFD54F,#FFD54F', 'light'),
-    'safety': ('#E9F6F1,#E9F6F1', 'light'), 'extra': ('#2A70B4,#2A70B4', 'dark'), 'transfer': ('#E6F1FF,#E6F1FF', 'light'),
-    'summer': ('#FFE4C7,#FFE4C7', 'light'), 'reviews': ('#FFF8EA,#FFF8EA', 'light'), 'admission': ('#0A2C55,#0A2C55', 'dark'),
-    'gallery': ('#0D2F5C,#0D2F5C', 'dark'), 'act-night': (INK, 'dark'), 'signup': ('#0A2C55,#0A2C55', 'dark'),
+C_SKY = {  # глава: (основной цвет главы, тон текста); сами фоны — в site-c.css (#id { --bg, --g1, --g2 })
+    'news': ('#08264A,#08264A', 'dark'), 'concept': ('#FBF7EF,#FBF7EF', 'light'), 'about': ('#F2F7FD,#F2F7FD', 'light'),
+    'programs': ('#0A2C55,#0A2C55', 'dark'), 'food': ('#FBF7EF,#FBF7EF', 'light'), 'teachers': ('#FFF8E6,#FFF8E6', 'light'),
+    'safety': ('#F2F7FD,#F2F7FD', 'light'), 'extra': ('#0A2C55,#0A2C55', 'dark'), 'transfer': ('#F2F7FD,#F2F7FD', 'light'),
+    'summer': ('#FBF7EF,#FBF7EF', 'light'), 'reviews': ('#FFF8E6,#FFF8E6', 'light'), 'admission': ('#0A2C55,#0A2C55', 'dark'),
+    'gallery': ('#08264A,#08264A', 'dark'), 'act-night': (INK, 'dark'), 'signup': ('#0A2C55,#0A2C55', 'dark'),
 }  # небо и тон предыдущей главы — главы собираются по порядку страницы
 
 
