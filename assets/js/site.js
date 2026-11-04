@@ -278,6 +278,7 @@
   /* ---------------- кадр прокрутки: сначала всё измеряем, потом всё двигаем ---------------- */
   var hero = $('.hero'), heroPin = hero && $('.pin', hero), lines = $$('.hero__h .l');
   var hdLogo = $('.hd__logo'), logoImg = hdLogo && $('img', hdLogo), logoBox = null;  /* куда прилетает солнце */
+  var heroBox = null;  /* место сцены первого экрана на экране, когда она закреплена */
   var colsBox = $('.cols'), cols = $$('.cols .col'), cards = $$('.stack .lvl');
   var sm = { hero: -1, estate: -1, night: -1 }, running = false, tPrev = 0;
   var progress = function (r) { return clamp(-r.top / Math.max(1, r.height - vh), 0, 1); };
@@ -327,9 +328,12 @@
           var pAll = sm.hero, split = parseFloat(hero.dataset.phase) || 1;
           var p = Math.min(1, pAll / split), open = ease(seg(p, 0, .4)), fly = ease(seg(p, .03, .62)), shrink = seg(p, .03, .62);
           var r0 = Math.min(vw, wide ? vh : vh * .5) * (wide ? .155 : .23), r1 = Math.hypot(vw, vh) * .62;
-          var sunY = wide ? .56 : vh < 720 ? .48 : .5, R = lerp(r0, r1, open), S = r0 / .27, cx = vw / 2, cy = vh * sunY;  /* на телефоне солнце чуть выше — между строк фразы */
+          /* координаты — внутри сцены: на iPhone (версия C) сцена — панель с отступами от краёв экрана */
+          if (!heroBox) { var hb = heroPin.getBoundingClientRect(); heroBox = { x: hb.left, y: parseFloat(getComputedStyle(heroPin).top) || 0, w: hb.width, h: hb.height }; }
+          var PW = heroBox.w || vw, PH = heroBox.h || vh;
+          var sunY = wide ? .56 : vh < 720 ? .48 : .5, R = lerp(r0, r1, open), S = r0 / .27, cx = PW / 2, cy = PH * sunY;  /* на телефоне солнце чуть выше — между строк фразы */
           if (logoBox) {  /* солнце логотипа: центр и размер вместе с лучами */
-            var tx = logoBox.left + logoBox.width * .772, ty = logoBox.top + logoBox.height * .592, ts = logoBox.width * .47;
+            var tx = logoBox.left - heroBox.x + logoBox.width * .772, ty = logoBox.top - heroBox.y + logoBox.height * .592, ts = logoBox.width * .47;
             cx = lerp(cx, tx, fly); cy = lerp(cy, ty, fly); S = lerp(S, ts, shrink);
           }
           var hs = heroPin.style;
@@ -337,8 +341,8 @@
           hs.setProperty('--s', S.toFixed(1) + 'px');
           hs.setProperty('--cx', cx.toFixed(1) + 'px');
           hs.setProperty('--cy', cy.toFixed(1) + 'px');
-          hs.setProperty('--mx', (vw / 2).toFixed(1) + 'px');
-          hs.setProperty('--my', (vh * sunY).toFixed(1) + 'px');
+          hs.setProperty('--mx', (PW / 2).toFixed(1) + 'px');
+          hs.setProperty('--my', (PH * sunY).toFixed(1) + 'px');
           hs.setProperty('--sunY', (sunY * 100) + '%');
           hs.setProperty('--tint', (.36 * (1 - seg(p, 0, .4))).toFixed(3));
           hs.setProperty('--ringop', (1 - seg(p, .6, .66)).toFixed(3));
@@ -428,7 +432,7 @@
   addEventListener('resize', function () {
     vw = innerWidth; vh = innerHeight; wide = vw >= 900;
     seqs.forEach(function (s) { if (s.started) s.size(); s.drawn = -1; });
-    pinsDirty = true; stopW = -1; logoBox = null;
+    pinsDirty = true; stopW = -1; logoBox = null; heroBox = null;
     heads.forEach(function (h) { h.last = -1; });
     kick();
   });

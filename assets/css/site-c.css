@@ -359,13 +359,15 @@ html.t-nohd .hd,html.t-nocta .ask{display:none!important}
    — кнопка записи — над панелью Safari, а не под ней. */
 @media (prefers-reduced-motion:no-preference){
   html.ios-bars.js:not(.a11y){--po:0px;--vbar:0px;--pt:calc(env(safe-area-inset-top,0px) + 8px);--pb:20px}
-  html.ios-bars.js:not(.a11y) .pin{position:fixed!important;left:0;right:0;top:var(--pt)!important;height:calc(100svh - var(--pt) - var(--pb))!important}
+  /* сцена — панель со скруглёнными углами и отступами от полос Safari */
+  html.ios-bars.js:not(.a11y){--pt:calc(env(safe-area-inset-top,0px) + 6px);--pb:14px}
+  html.ios-bars.js:not(.a11y) .pin{position:fixed!important;left:8px;right:8px;top:var(--pt)!important;height:calc(100svh - var(--pt) - var(--pb))!important;border-radius:28px;overflow:hidden;-webkit-mask-image:-webkit-radial-gradient(white,black)}
   html.ios-bars.js:not(.a11y) .hero.rhero,html.ios-bars.js:not(.a11y) .estate,html.ios-bars.js:not(.a11y) .nightseq{clip-path:inset(0)}
   html.ios-bars.js:not(.a11y) .hero.rhero{margin-top:0}
   html.ios-bars.js:not(.a11y) .estate{background:#fff}
   html.ios-bars.js:not(.a11y) .nightseq{background:#0C0C10}
   html.ios-bars.js:not(.a11y) .lvl{position:relative;top:0}
   html.ios-bars.js:not(.a11y) .lvl.is-stk{position:sticky;top:calc(78px + env(safe-area-inset-top,0px))}
-  html.ios-bars.js:not(.a11y) .ask.dock-cta{top:calc(100svh - 56px - 6px);bottom:auto}
+  html.ios-bars.js:not(.a11y) .ask.dock-cta{top:calc(100svh - 56px - 6px + var(--drop,0px));bottom:auto;transition:opacity .45s var(--ease),transform .7s cubic-bezier(.2,1.25,.3,1),top .35s var(--ease)}
 }
-@media (prefers-reduced-motion:no-preference) and (min-width:900px){html.ios-bars.js:not(.a11y) .ask.dock-cta{top:calc(100svh - 60px - 6px)}html.ios-bars.js:not(.a11y) .lvl.is-stk{top:96px}}
+@media (prefers-reduced-motion:no-preference) and (min-width:900px){html.ios-bars.js:not(.a11y) .ask.dock-cta{top:calc(100svh - 60px - 6px + var(--drop,0px))}html.ios-bars.js:not(.a11y) .lvl.is-stk{top:96px}}
