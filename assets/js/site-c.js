@@ -72,45 +72,55 @@
   var iosBars = (window.CSS && CSS.supports && CSS.supports('-webkit-touch-callout', 'none')) || /[?&]ios\b/.test(location.search);
   if (iosBars) {
     root.classList.add('ios-bars');
-    /* карточки программ: обычный блок → «липнет», когда подъехала к своему месту → снова обычный блок со сдвигом,
-       когда стопка уезжает вверх. Переключения — там, где все три положения совпадают, поэтому без скачков. */
-    var cards = [].slice.call(document.querySelectorAll('.stack .lvl')), S = [], st = [], cTick = false;
-    var stickyTop = function (c) { var t = c.style.top, had = c.classList.contains('is-stk'); c.style.top = ''; c.classList.add('is-stk'); var v = parseFloat(getComputedStyle(c).top) || 0; if (!had) c.classList.remove('is-stk'); c.style.top = t; return v; };
-    cards.forEach(function (c, i) { S[i] = stickyTop(c); st[i] = 'flow'; });
-    var calmNow = function () { return root.classList.contains('a11y') || matchMedia('(prefers-reduced-motion: reduce)').matches; };
-    function cardsFrame() {
-      cTick = false;
-      if (calmNow()) return;
-      cards.forEach(function (c, i) {
-        var top = c.getBoundingClientRect().top, s = S[i];
-        if (st[i] === 'flow' && top <= s + 80 && top > s - 400) { c.classList.add('is-stk'); st[i] = 'stk'; }
-        else if (st[i] === 'stk' && top > s + 80) { c.classList.remove('is-stk'); st[i] = 'flow'; }
-        else if (st[i] === 'stk' && top < s - .5) {
-          c.classList.remove('is-stk');
-          var nat = c.getBoundingClientRect().top;
-          c.style.top = (top - nat).toFixed(1) + 'px'; st[i] = 'after';
-        } else if (st[i] === 'after' && top >= s) { c.style.top = ''; c.classList.add('is-stk'); st[i] = 'stk'; }
-      });
+    var sda = window.CSS && CSS.supports && CSS.supports('animation-timeline: scroll()');
+    if (sda) {
+      root.classList.add('sda');
+      /* границы «прилипания» для каждой сцены и карточки: с какой прокрутки блок начинает ехать вниз (--ps)
+         и на сколько он может уехать, пока его глава не кончится (--pd) — то же, что делал бы position: sticky */
+      var docTop = function (el) { var t = 0; while (el) { t += el.offsetTop; el = el.offsetParent; } return t; };
+      var safe = document.createElement('i');
+      safe.style.cssText = 'position:absolute;top:0;left:0;width:1px;height:env(safe-area-inset-top,0px);visibility:hidden;pointer-events:none';
+      document.body.appendChild(safe);
+      var pins = [].slice.call(document.querySelectorAll('.hero .pin, .estate .pin, .nightseq .pin'));
+      var stackCards = [].slice.call(document.querySelectorAll('.stack .lvl'));
+      var measureTick = false;
+      var measureSda = function () {
+        measureTick = false;
+        pins.forEach(function (p) {
+          var box = p.parentNode;
+          p.style.setProperty('--ps', docTop(p) + 'px');
+          p.style.setProperty('--pd', Math.max(0, box.offsetHeight - p.offsetHeight) + 'px');
+        });
+        var S = innerWidth >= 900 ? 96 : 78 + safe.offsetHeight;
+        stackCards.forEach(function (c) {
+          var st = c.parentNode, top = docTop(c), end = docTop(st) + st.offsetHeight;
+          c.style.setProperty('--ps', Math.max(0, top - S) + 'px');
+          c.style.setProperty('--pd', Math.max(0, end - (top + c.offsetHeight)) + 'px');
+        });
+      };
+      var remeasure = function () { if (!measureTick) { measureTick = true; requestAnimationFrame(measureSda); } };
+      measureSda();
+      addEventListener('load', remeasure);
+      addEventListener('resize', remeasure);
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(remeasure);
+      if ('ResizeObserver' in window) new ResizeObserver(remeasure).observe(document.body);
     }
-    var kickCards = function () { if (!cTick) { cTick = true; requestAnimationFrame(cardsFrame); } };
-    addEventListener('scroll', kickCards, { passive: true });
-    addEventListener('resize', function () { cards.forEach(function (c, i) { c.classList.remove('is-stk'); c.style.top = ''; st[i] = 'flow'; S[i] = stickyTop(c); }); kickCards(); });
-    kickCards();
 
+    /* кнопка записи: когда при прокрутке панель Safari сжимается, кнопка опускается вместе с краем страницы */
+    var probe = document.createElement('i');
+    probe.style.cssText = 'position:absolute;top:0;left:0;width:1px;height:100svh;visibility:hidden;pointer-events:none';
+    document.body.appendChild(probe);
+    var dropNow = -1;
+    var placeCta = function () {
+      var svh = probe.offsetHeight, h = window.visualViewport ? visualViewport.height : innerHeight;
+      var d = Math.round(Math.max(0, Math.min(90, h - svh)));
+      if (d !== dropNow) { dropNow = d; root.style.setProperty('--drop', d + 'px'); }
+    };
+    addEventListener('scroll', placeCta, { passive: true });
+    addEventListener('resize', placeCta);
+    if (window.visualViewport) visualViewport.addEventListener('resize', placeCta);
+    placeCta();
   }
-
-  /* цвет кнопки записи — по главе под ней: на светлой синяя, на тёмной белая */
-  var ctaEl = document.querySelector('.ask.dock-cta'), ctaSecs = [].slice.call(document.querySelectorAll('main > .sc')), ctaTick = false, ctaLight = null;
-  function toneCta() {
-    ctaTick = false;
-    if (!ctaEl) return;
-    var r = ctaEl.getBoundingClientRect(), y = r.top + r.height / 2, light = false;
-    for (var i = ctaSecs.length - 1; i >= 0; i--) { var b = ctaSecs[i].getBoundingClientRect(); if (b.top <= y && b.bottom > y) { light = ctaSecs[i].dataset.tone === 'light'; break; } }
-    if (light !== ctaLight) { ctaLight = light; root.classList.toggle('cta-light', light); }
-  }
-  addEventListener('scroll', function () { if (!ctaTick) { ctaTick = true; requestAnimationFrame(toneCta); } }, { passive: true });
-  addEventListener('resize', toneCta);
-  toneCta();
 
   /* кнопка записи внизу экрана прячется у самой формы */
   var sg = document.getElementById('signup');

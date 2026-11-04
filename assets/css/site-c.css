@@ -356,44 +356,23 @@ html.t-nohd .hd,html.t-nocta .ask{display:none!important}
 .nightseq .pin::before{background:#0C0C10}
 .lvl{background:transparent}
 /* ---------- iPhone (Safari 26): полосы браузера — стекло (найдено тестами на страницах bars/) ----------
-   Safari заливает полосу у часов и панель с адресом сплошным цветом, как только под ними оказывается закреплённый
-   элемент (sticky/fixed): кнопка записи у нижнего края, закреплённые сцены, «липкие» карточки программ —
-   в том числе когда такой элемент просто проезжает под полосой. Поэтому на iPhone (класс ios-bars ставит site-c.js):
-   — сцены (первый экран, особняк, ночь) — неподвижный слой между полосами, а глава открывает его как окно (clip-path);
-   — карточки программ «липнут» только пока стоят между полосами, остальное время едут как обычный блок (site-c.js);
-   — кнопка записи — над панелью Safari, а не под ней. */
+   Safari заливает полосу у часов и панель с адресом сплошным цветом, если под ними оказывается закреплённый элемент
+   (position: sticky/fixed) — сцены первого экрана, особняка и ночи, «липкие» карточки программ. Поэтому на iPhone
+   (классы ios-bars и sda ставит site-c.js) они не закреплены, а едут обычными блоками, и «прилипание» делает
+   анимация, привязанная к прокрутке (animation-timeline: scroll()): блок сдвигается вниз ровно на столько,
+   на сколько прокрутили, — выглядит так же, как sticky, а для Safari это обычное содержимое страницы,
+   и сквозь стекло его полос видна сама сцена. Границы прокрутки (--ps, --pd) считает site-c.js. */
+@keyframes pin-move{from{transform:translateY(0)}to{transform:translateY(var(--pd,0px))}}
 @media (prefers-reduced-motion:no-preference){
-  html.ios-bars.js:not(.a11y){--po:0px;--vbar:0px;--pt:calc(env(safe-area-inset-top,0px) + 8px);--pb:20px}
-  /* сцена — панель со скруглёнными углами и отступами от полос Safari */
-  html.ios-bars.js:not(.a11y){--pt:calc(env(safe-area-inset-top,0px) + 6px);--pb:14px}
-  html.ios-bars.js:not(.a11y) .pin{position:fixed!important;left:8px;right:8px;top:var(--pt)!important;height:calc(100svh - var(--pt) - var(--pb))!important;border-radius:28px;overflow:hidden;-webkit-mask-image:-webkit-radial-gradient(white,black)}
-  html.ios-bars.js:not(.a11y) .hero.rhero,html.ios-bars.js:not(.a11y) .estate,html.ios-bars.js:not(.a11y) .nightseq{clip-path:inset(0)}
-  html.ios-bars.js:not(.a11y) .hero.rhero{margin-top:0}
-  /* у панели первого экрана нет своего фона: свет солнца и голубой отсвет гаснут внутри неё, а вокруг — тот же синий
-     главы. Так под полосами Safari нет «другого» синего и не видно края панели; скругление видно только у видео. */
-  html.ios-bars.js:not(.a11y) .hero .pin::before{background:radial-gradient(55% 34% at 50% var(--sunY,50%),rgba(252,196,28,.26),rgba(252,196,28,0) 72%),radial-gradient(70% 30% at 50% 62%,rgba(42,112,180,.45),rgba(42,112,180,0) 75%)}
-  /* внутри панели отступы — от её краёв: полоса у часов и панель Safari уже за её пределами */
-  html.ios-bars.js:not(.a11y) .hero__hint{bottom:14px}
-  html.ios-bars.js:not(.a11y) .estate__head{top:78px}
-  html.ios-bars.js:not(.a11y) .night__bye{top:84px}
-  html.ios-bars.js:not(.a11y) .estate__arrive{bottom:72px}
-  html.ios-bars.js:not(.a11y) .night__cta{bottom:72px}
-  html.ios-bars.js:not(.a11y) .estate{background:#fff}
-  html.ios-bars.js:not(.a11y) .nightseq{background:#0C0C10}
-  html.ios-bars.js:not(.a11y) .lvl{position:relative;top:0}
-  html.ios-bars.js:not(.a11y) .lvl.is-stk{position:sticky;top:calc(78px + env(safe-area-inset-top,0px))}
-  /* кнопка — у нижнего края области страницы: Safari сам опускает её, когда панель сжимается при прокрутке.
-     Ниже этого края Safari обрезает закреплённые элементы, поэтому тень у кнопки — только вверх */
-  html.ios-bars.js:not(.a11y) .ask.dock-cta{top:auto;bottom:8px}
+  html.ios-bars.sda.js:not(.a11y){--po:0px}
+  html.ios-bars.sda.js:not(.a11y) .hero.rhero{margin-top:0}
+  html.ios-bars.sda.js:not(.a11y) .pin,html.ios-bars.sda.js:not(.a11y) .lvl{position:relative!important;top:0!important;
+    animation:pin-move auto linear both;animation-timeline:scroll(root);animation-range:var(--ps,0px) calc(var(--ps,0px) + var(--pd,0px));will-change:transform}
+  html.ios-bars.sda.js:not(.a11y) .pin{height:100vh!important;height:100lvh!important}
+  /* кнопка записи: над панелью Safari, при сжатой панели опускается вместе с её краем (--drop ставит site-c.js);
+     ниже этого края Safari обрезает закреплённые элементы, поэтому тень у кнопки — только вверх */
+  html.ios-bars.js:not(.a11y) .ask.dock-cta{top:calc(100svh - 56px - 10px + var(--drop,0px));bottom:auto;transition:opacity .45s var(--ease),transform .7s cubic-bezier(.2,1.25,.3,1),top .3s var(--ease)}
   html.ios-bars.js:not(.a11y) .ask.dock-cta::before{box-shadow:0 -6px 14px -4px rgba(0,0,0,.22)}
   html.ios-bars.js:not(.a11y).cta-light .ask.dock-cta::before{box-shadow:0 -6px 14px -4px rgba(10,44,85,.25)}
 }
-@media (prefers-reduced-motion:no-preference) and (max-width:899px){
-  html.ios-bars.js:not(.a11y) .hero__h .r1{top:calc(70px + 3svh)}
-  html.ios-bars.js:not(.a11y) .hero__h .r2{bottom:calc(64px + 2svh)}
-  html.ios-bars.js:not(.a11y) .rhero__steps{top:72px}
-  html.ios-bars.js:not(.a11y) .rhero__slot{top:62%}
-}
-@media (prefers-reduced-motion:no-preference) and (max-width:899px) and (max-height:800px){html.ios-bars.js:not(.a11y) .rhero__slot{top:66%}}
-@media (prefers-reduced-motion:no-preference) and (max-width:899px) and (max-height:700px){html.ios-bars.js:not(.a11y) .rhero__slot{top:68%}}
-@media (prefers-reduced-motion:no-preference) and (min-width:900px){html.ios-bars.js:not(.a11y) .lvl.is-stk{top:96px}}
+@media (prefers-reduced-motion:no-preference) and (min-width:900px){html.ios-bars.js:not(.a11y) .ask.dock-cta{top:calc(100svh - 60px - 10px + var(--drop,0px))}}
