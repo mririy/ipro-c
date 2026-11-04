@@ -219,7 +219,7 @@ def hero():
     <div class="rhero__dark" aria-hidden="true"></div>
     <div class="wrap rhero__txt">
       <h1 class="rhero__h">ребёнку интересно, а&nbsp;вам спокойно</h1>
-      <p class="rhero__cap">{e(INTRO['eyebrow'])} — частная школа полного дня в&nbsp;Ялте для детей 4–18&nbsp;лет</p>
+      <p class="rhero__cap">{e(INTRO['eyebrow'])} — частная школа полного дня в&nbsp;Ялте для&nbsp;детей <span class="nw">4–18&nbsp;лет</span></p>
     </div>
     <div class="rhero__card" aria-hidden="true">
       <video class="intro__v" data-src-land="assets/video/tour.mp4" data-src-port="assets/video/hero_school.mp4" data-poster-land="assets/video/tour_poster.jpg" data-poster-port="assets/img/posters/hero_school.jpg" poster="assets/video/tour_poster.jpg" muted loop playsinline autoplay preload="auto"></video>
