@@ -338,3 +338,4 @@ html.cta-wait .ask.dock-cta{opacity:0;transform:scale(.18);pointer-events:none}
 html:not(.cta-wait) .hero .hero__hint{opacity:0}
 .estate__head{top:calc(84px + var(--po) + env(safe-area-inset-top,0px))}
 .night__bye{top:calc(96px + var(--po) + env(safe-area-inset-top,0px))}
+html.t-nohd .hd,html.t-nocta .ask{display:none!important}

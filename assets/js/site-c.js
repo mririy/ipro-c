@@ -6,6 +6,9 @@
 (function () {
   'use strict';
   var root = document.documentElement;
+  /* для проверки полос Safari: ?nohd — без шапки, ?nocta — без кнопки записи (страница bars/) */
+  if (/[?&]nohd\b/.test(location.search)) root.classList.add('t-nohd');
+  if (/[?&]nocta\b/.test(location.search)) root.classList.add('t-nocta');
   var pin = document.querySelector('.hero .rhero__pin'), slot = pin && pin.querySelector('.rhero__slot');
   var clamp = function (v) { return Math.max(0, Math.min(1, v)); };
   var seg = function (p, a, b) { return clamp((p - a) / (b - a)); };
