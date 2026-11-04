@@ -59,6 +59,12 @@
     v.addEventListener('canplay', kickV);
   }
 
+  /* фон страницы синий, пока на экране первый экран (Safari на iPhone берёт его для полос браузера в самом начале) */
+  var topSec = document.getElementById('top'), atTop = null;
+  function markTop() { var on = !!topSec && topSec.getBoundingClientRect().bottom > 2; if (on !== atTop) { atTop = on; root.classList.toggle('at-top', on); } }
+  addEventListener('scroll', markTop, { passive: true });
+  markTop();
+
   /* кнопка записи внизу экрана прячется у самой формы */
   var sg = document.getElementById('signup');
   if (sg && 'IntersectionObserver' in window) {

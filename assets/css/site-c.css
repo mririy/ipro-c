@@ -11,7 +11,9 @@
   --grad-d:linear-gradient(90deg,#FCC41C 0%,#FFE6A0 48%,#A8D4FF 100%);   /* на чёрном: от солнца школы к небу */
   --grad-l:linear-gradient(90deg,#1E5EA8 0%,#3D8FD9 100%);   /* на светлом: синий школы, без грязной середины */
 }
-html{background:var(--ink)}
+/* фон страницы: в начале — синий первого экрана, дальше — чёрный (его Safari показывает, если ему нечего показать в полосе) */
+html{background:var(--ink);overscroll-behavior-y:none}
+html.at-top{background:#0A2C55}
 body{font-synthesis-weight:auto}
 
 /* ---------- главы: ровный перелив, границы — плавной дугой, как у Рокета ---------- */
@@ -61,7 +63,7 @@ body{font-synthesis-weight:auto}
 .hd__help .i{width:22px;height:22px}
 .hd__logo{margin-right:auto}
 /* шапка — скруглённая плашка с отступом от краёв, как у Рокета */
-.hd{left:8px;right:8px;top:calc(6px + env(safe-area-inset-top,0px));padding:6px 6px 6px 14px;border-radius:26px;transition:color .35s,background-color .35s,box-shadow .35s}
+.hd{left:8px;right:8px;top:calc(12px + env(safe-area-inset-top,0px));padding:6px 6px 6px 14px;border-radius:26px;transition:color .35s,background-color .35s,box-shadow .35s}
 .hd.is-solid{background:rgba(12,12,16,.55);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1),0 10px 30px rgba(0,0,0,.25)}
 .hd.is-light.is-solid{background:rgba(255,255,255,.62);box-shadow:inset 0 0 0 1px rgba(10,44,85,.08),0 10px 30px rgba(10,44,85,.1)}
 @media (min-width:900px){.hd{left:16px;right:16px;top:calc(12px + env(safe-area-inset-top,0px));padding:8px 8px 8px 22px;border-radius:30px}}
