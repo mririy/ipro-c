@@ -93,7 +93,9 @@ html.modal-open .ask.dock-cta{opacity:0;pointer-events:none}
    2-я — site-c.js: окно с видео сжимается в стеклянную карточку и уходит вниз, на чёрном появляются шаги */
 .hero.rhero{height:360vh;background:#0A2C55}
 /* синий школы, как в версии A: глубокий перелив с солнечным светом в центре и голубым внизу */
-.hero .pin::before{background:radial-gradient(60% 45% at 50% var(--sunY,50%),rgba(252,196,28,.28),rgba(252,196,28,0) 70%),radial-gradient(100% 55% at 50% 100%,rgba(42,112,180,.6),rgba(42,112,180,0) 72%),linear-gradient(180deg,#0A2C55 0%,#0B3262 55%,#0F3F75 100%)}
+/* края сцены — тот же синий, что и у главы (#0A2C55): на iPhone под стеклом полос Safari видна сама глава,
+   и переход от сцены к полосам незаметен */
+.hero .pin::before{background:radial-gradient(60% 45% at 50% var(--sunY,50%),rgba(252,196,28,.28),rgba(252,196,28,0) 70%),radial-gradient(90% 38% at 50% 78%,rgba(42,112,180,.5),rgba(42,112,180,0) 72%),linear-gradient(180deg,#0A2C55 0%,#0D3769 45%,#0E3A6E 70%,#0A2C55 100%)}
 .hero__orb text{font:600 7.2px var(--mono);letter-spacing:.02em}
 .hero__eyebrow{font-family:var(--mono);font-size:14px;text-transform:uppercase;letter-spacing:.04em}
 .hero__h{font-family:var(--display);font-weight:600;letter-spacing:-.03em;text-transform:lowercase;opacity:calc(var(--hop,1) * (1 - var(--tb,0)))}
@@ -364,6 +366,6 @@ html.t-nohd .hd,html.t-nocta .ask{display:none!important}
   html.ios-bars.js:not(.a11y) .nightseq{background:#0C0C10}
   html.ios-bars.js:not(.a11y) .lvl{position:relative;top:0}
   html.ios-bars.js:not(.a11y) .lvl.is-stk{position:sticky;top:calc(78px + env(safe-area-inset-top,0px))}
-  html.ios-bars.js:not(.a11y) .ask.dock-cta{top:calc(100svh - 56px - 20px);bottom:auto}
+  html.ios-bars.js:not(.a11y) .ask.dock-cta{top:calc(100svh - 56px - 6px);bottom:auto}
 }
-@media (prefers-reduced-motion:no-preference) and (min-width:900px){html.ios-bars.js:not(.a11y) .ask.dock-cta{top:calc(100svh - 60px - 20px)}html.ios-bars.js:not(.a11y) .lvl.is-stk{top:96px}}
+@media (prefers-reduced-motion:no-preference) and (min-width:900px){html.ios-bars.js:not(.a11y) .ask.dock-cta{top:calc(100svh - 60px - 6px)}html.ios-bars.js:not(.a11y) .lvl.is-stk{top:96px}}
