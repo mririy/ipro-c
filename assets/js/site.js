@@ -323,7 +323,9 @@
         if (near(rHero)) {
           /* солнце раскрывается в видео; видео остаётся, а само солнце улетает вверх в логотип */
           /* видео раскрывается кругом из центра, а солнце с первого шага плавно уменьшается и улетает в логотип */
-          var p = sm.hero, open = ease(seg(p, 0, .4)), fly = ease(seg(p, .03, .62)), shrink = seg(p, .03, .62);
+          /* в версии C у сцены две части: data-phase — доля прокрутки на солнце, дальше видео уходит в карточку (site-c.js) */
+          var pAll = sm.hero, split = parseFloat(hero.dataset.phase) || 1;
+          var p = Math.min(1, pAll / split), open = ease(seg(p, 0, .4)), fly = ease(seg(p, .03, .62)), shrink = seg(p, .03, .62);
           var r0 = Math.min(vw, vh) * (wide ? .155 : .23), r1 = Math.hypot(vw, vh) * .62;
           var R = lerp(r0, r1, open), S = r0 / .27, cx = vw / 2, cy = vh * .56;
           if (logoBox) {  /* солнце логотипа: центр и размер вместе с лучами */
@@ -346,6 +348,7 @@
           hs.setProperty('--orbop', (1 - seg(p, .06, .2)).toFixed(3));
           hs.setProperty('--hop', '1');
           if (hdLogo) hdLogo.classList.toggle('is-catch', p > .6);
+          if (window.iproHeroB) window.iproHeroB(split < 1 ? clamp((pAll - split) / (1 - split), 0, 1) : 0);
           var spread = ease(seg(p, 0, .7));
           if (lines.length === 4) {
             lines[0].style.transform = 'translate3d(0,' + (-spread * vh * .035).toFixed(1) + 'px,0)';
@@ -442,6 +445,7 @@
     seqs.forEach(function (s) { s.sleep(); });
     heads.forEach(function (h) { h.last = -1; });
     sm.hero = sm.estate = sm.night = -1;
+    if (window.iproHeroB) window.iproHeroB(-1);
   }
   function wake() {
     seqs.forEach(function (s) {

@@ -211,24 +211,30 @@ def menu_dialog():
 
 # ---------------------------------------------------------------- главы
 def hero():
-    """Первый экран: перелив и большая строчная фраза; видео — в стеклянной карточке, она поворачивается
-    при прокрутке, фон уходит в чёрный, и слева появляются три шага к зачислению."""
+    """Первый экран, две части одной сцены.
+    1) как в версии A: видео в круге-солнце, вокруг по кругу «инновационное образовательное пространство»;
+       при прокрутке круг раскрывается во весь экран, а солнце уменьшается и улетает в логотип.
+    2) как у Рокета: видео сжимается в стеклянную карточку и уходит вниз, а на чёрном появляются три шага к зачислению."""
     steps = ''.join(f'<li class="rstep"><span class="rstep__i">{sun_svg()}</span><b>{e(t)}</b><small>{e(d)}</small></li>' for t, d in ADMISSION['steps'])
-    body = f'''  <div class="rhero__pin">
-    <div class="rhero__bg" aria-hidden="true"><i class="blob blob--a"></i><i class="blob blob--b"></i><i class="blob blob--c"></i></div>
-    <div class="rhero__dark" aria-hidden="true"></div>
-    <div class="wrap rhero__txt">
-      <h1 class="rhero__h">ребёнку интересно, а&nbsp;вам спокойно</h1>
-      <p class="rhero__cap">{e(INTRO['eyebrow'])} — частная школа полного дня в&nbsp;Ялте для&nbsp;детей <span class="nw">4–18&nbsp;лет</span></p>
+    body = f'''  <div class="pin rhero__pin">
+    <div class="rhero__slot" aria-hidden="true"></div>
+    <div class="hero__sh" aria-hidden="true"></div>
+    <div class="hero__win">
+      <video class="intro__v" data-src-land="assets/video/tour.mp4" data-src-port="assets/video/hero_school.mp4" data-poster-land="assets/video/tour_poster.jpg" data-poster-port="assets/img/posters/hero_school.jpg" poster="assets/video/tour_poster.jpg" muted loop playsinline autoplay preload="auto" aria-label="Видео о школе: классы, занятия, территория"></video>
+      <div class="hero__tint"></div>
+      <div class="hero__gloss" aria-hidden="true"><img class="rhero__mark" src="assets/img/wordmark-aipro.webp" alt=""><span class="rhero__chip">3 дня бесплатно</span></div>
     </div>
-    <div class="rhero__card" aria-hidden="true">
-      <video class="intro__v" data-src-land="assets/video/tour.mp4" data-src-port="assets/video/hero_school.mp4" data-poster-land="assets/video/tour_poster.jpg" data-poster-port="assets/img/posters/hero_school.jpg" poster="assets/video/tour_poster.jpg" muted loop playsinline autoplay preload="auto"></video>
-      <img class="rhero__mark" src="assets/img/wordmark-aipro.webp" alt="">
-      <span class="rhero__chip">пробные дни · 3 дня бесплатно</span>
-    </div>
+    <svg class="hero__ring" viewBox="-100 -100 200 200" aria-hidden="true">
+      <path d="M -51.96 -30 A 60 60 0 1 1 -51.96 30" fill="none" stroke="#FCC41C" stroke-width="8" stroke-linecap="round"/>
+      <g class="hero__rays" stroke="#FCC41C" stroke-width="8" stroke-linecap="round"><path d="M0 -76V-94"/><path d="M38 -65.8L47 -81.4"/><path d="M65.8 -38L81.4 -47"/><path d="M76 0H94"/><path d="M65.8 38L81.4 47"/><path d="M38 65.8L47 81.4"/><path d="M0 76V94"/></g>
+      <g class="hero__orb"><path id="orbPath" d="M0 -67A67 67 0 1 1 0 67A67 67 0 1 1 0 -67" fill="none"/><text><textPath href="#orbPath" textLength="418" lengthAdjust="spacing">{e(INTRO["eyebrow"].upper())} ·</textPath></text></g>
+    </svg>
+    <p class="hero__eyebrow">{e(INTRO['eyebrow'])}<span> · частная школа полного дня в Ялте</span></p>
+    <h1 class="hero__h" aria-label="{e(INTRO['title1'] + ' ' + INTRO['title2'])}"><span class="row r1"><span class="l">ребёнку</span><span class="l">интересно,</span></span><span class="row r2"><span class="l">а вам</span><span class="l acc">спокойно</span></span></h1>
+    <a class="hero__hint" href="#news" data-go="news">Листайте</a>
     <ol class="wrap rhero__steps" aria-label="Как поступить">{steps}</ol>
   </div>'''
-    return section('top', 'Начало', body, '#D8EBF9,#FFF1C2', 'light', 'rhero')
+    return section('top', 'Начало', body, INK, 'dark', 'hero rhero', ' data-phase=".45"')
 
 
 def news():
@@ -838,7 +844,6 @@ def page():
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Ай Про · частная школа полного дня в Ялте</title>
 <meta name="description" content="{e(desc)}">
-<meta name="theme-color" content="#0A2C55">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="ru_RU">
 <meta property="og:site_name" content="Ай Про · IPROSCHOOL">
