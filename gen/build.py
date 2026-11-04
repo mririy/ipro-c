@@ -1,0 +1,884 @@
+# -*- coding: utf-8 -*-
+"""Собирает index.html сайта IPROSCHOOL, версия C — в духе rocketbank.ru: чёрные главы чередуются
+с пастельными переливами, строчные широкие заголовки, моноширинные подписи капсом, стеклянные карточки,
+кнопка записи всегда внизу экрана. Тексты и разделы — как в версии A.
+Ниже — исходное описание версии A, от которой собрана эта.
+
+Сюжет одного школьного дня: солнце из логотипа открывает видео, утро у особняка (3D-пролёт),
+дальше разделы идут по часам — 08:30 уроки, 12:40 обед, 14:30 после уроков, 18:00 домой —
+а небо за страницей меняется от утра к ночи. Все разделы и тексты — как на нынешнем сайте."""
+import html, json, os, re, sys, hashlib, shutil
+sys.path.insert(0, os.path.dirname(__file__))
+from content import *  # noqa
+
+OUT = sys.argv[1]  # папка сайта
+HERE = os.path.dirname(os.path.abspath(__file__))
+ICONS = os.path.join(HERE, 'icons')                 # иконки Lucide (ISC), которые использует сайт
+LUCIDE_FULL = '/home/claude/npm/lucide/icons'        # полный набор, если есть: новые иконки докопируются в gen/icons
+USED = set()
+
+
+def e(s):
+    return html.escape(str(s), quote=True)
+
+
+def add_dims(h):
+    """Проставляет width/height всем картинкам из assets — чтобы страница не прыгала при загрузке."""
+    from PIL import Image
+
+    def rep(m):
+        tag = m.group(0)
+        if ' width=' in tag:
+            return tag
+        try:
+            with Image.open(os.path.join(OUT, m.group(1))) as im:
+                w, hh = im.size
+        except Exception:
+            return tag
+        return tag.replace('<img ', f'<img width="{w}" height="{hh}" ', 1)
+    return re.sub(r'<img [^>]*?src="(assets/[^"?]+)[^"]*"[^>]*>', rep, h)
+
+
+def ss(name, sizes):
+    """srcset с уменьшенной копией *-sm.jpg: телефон берёт лёгкую картинку, если ему её хватает."""
+    from PIL import Image
+    full = os.path.join(OUT, 'assets/img', name + '.jpg')
+    sm = os.path.join(OUT, 'assets/img', name + '-sm.jpg')
+    if not (os.path.exists(full) and os.path.exists(sm)):
+        return ''
+    with Image.open(full) as a, Image.open(sm) as b:
+        wf, ws = a.size[0], b.size[0]
+    if ws >= wf:
+        return ''
+    return f' srcset="assets/img/{name}-sm.jpg {ws}w, assets/img/{name}.jpg {wf}w" sizes="{sizes}"'
+
+
+def small(path):
+    """Уменьшенная копия *-sm.jpg, если она есть."""
+    sm = path[:-4] + '-sm.jpg'
+    return sm if os.path.exists(os.path.join(OUT, sm)) else path
+
+
+def I(name, cls=''):
+    USED.add(name)
+    return f'<svg class="i{(" " + cls) if cls else ""}" aria-hidden="true"><use href="#i-{name}"/></svg>'
+
+
+def kick(text, tag='p'):
+    return f'<{tag} class="kick">{e(text)}</{tag}>'
+
+
+def h2(title, em='', cls='h2'):
+    t = e(title) + (f' <em>{e(em)}</em>' if em else '')
+    longest = max(len(w) for w in (title + ' ' + em).split())
+    if longest >= 12 and 'h2--xl' not in cls:  # «Профессиональная», «образовательная»: на телефоне такое слово не влезет в строку крупным кеглем
+        cls += ' h2--long'
+    return f'<h2 class="{cls}" data-split>{t}</h2>'
+
+
+def more(label='Подробнее', tag='span', attrs='', cls=''):
+    t = ' type="button"' if tag == 'button' else ''
+    return f'<{tag} class="more{(" " + cls) if cls else ""}"{t}{attrs}>{e(label)}{I("arrow-right")}</{tag}>'
+
+
+def aud(p):
+    return f"{p['audience']}, {p['ages']}" if p['audience'] else p['ages']
+
+
+def video(name, cls='', label='', autoplay=False):
+    poster = small(f'assets/img/posters/{name}.jpg')  # лёгкий кадр: видео заменит его, как только дойдёт прокрутка
+    attrs = 'muted loop playsinline' + (' autoplay preload="auto"' if autoplay else ' preload="none"')
+    al = f' aria-label="{e(label)}"' if label else ' aria-hidden="true"'
+    return f'<video class="{cls}" src="assets/video/{name}.mp4" poster="{poster}" {attrs}{al}></video>'
+
+
+def ilist(items, cls=''):
+    """Список с мини-иконками: тонкая иконка и текст школы, без плашек."""
+    lis = ''.join(f'<li>{I(ic)}<span>{e(t)}</span></li>' for ic, t in items)
+    return f'<ul class="il{(" " + cls) if cls else ""}">{lis}</ul>'
+
+
+SUN_RAYS = ''.join(f'<path d="M{x1} {y1}L{x2} {y2}"/>' for x1, y1, x2, y2 in
+                   [(0, -62, 0, -90), (0, 62, 0, 90), (-62, 0, -90, 0), (62, 0, 90, 0),
+                    (44, -44, 63, -63), (-44, 44, -63, 63), (44, 44, 63, 63), (-44, -44, -63, -63)])
+
+
+def sun_svg(cls=''):
+    return (f'<svg class="sun{(" " + cls) if cls else ""}" viewBox="-100 -100 200 200" aria-hidden="true">'
+            f'<circle r="44" fill="#FCC41C"/><g class="sun__rays" stroke="#FCC41C" stroke-width="10" stroke-linecap="round">{SUN_RAYS}</g></svg>')
+
+
+# место солнца на дуге для каждого часа: доля пути с востока на запад
+ARC_AT = {'08:30': .2, '12:40': .5, '14:30': .66, '18:00': .9}
+
+
+def arc_point(t):
+    """Точка на дуге солнца (та же кривая, что в th__arc): доли ширины и высоты."""
+    u = 1 - t
+    return u * u * .01 + 2 * u * t * .5 + t * t * .99, u * u * .9667 - 2 * u * t * .4667 + t * t * .9667
+
+
+def timehead(key):
+    """Время дня — заголовок главы: солнце на дуге, крупные часы и короткая фраза из LEADINS.
+    Солнце сразу стоит на своём месте; скрипт ведёт его туда от места предыдущей главы."""
+    t, phrase, _ = LEADINS[key]
+    a = ARC_AT.get(t, .5)
+    x, y = arc_point(a)
+    return (f'<div class="th rv" data-arc="{a}">'
+            f'<div class="th__sky" aria-hidden="true"><svg class="th__arc" viewBox="0 0 1000 120" preserveAspectRatio="none"><path d="M10 116 Q500 -56 990 116"/></svg>'
+            f'<span class="th__sun" style="left:{x * 100:.2f}%;top:{y * 100:.2f}%">{sun_svg()}</span></div>'
+            f'<p class="th__t"><span class="th__clock" data-time="{e(t)}" aria-hidden="true">{e(t)}</span><span class="vh">{e(t)}</span></p>'
+            f'<p class="th__s">{e(phrase)}</p></div>')
+
+
+def mix(a, b, t):
+    """Смесь двух цветов #RRGGBB."""
+    a, b = a.lstrip('#'), b.lstrip('#')
+    return '#' + ''.join(f'{round(int(a[i:i + 2], 16) * (1 - t) + int(b[i:i + 2], 16) * t):02X}' for i in (0, 2, 4))
+
+
+_SKY = {'prev': None, 'tone': None}
+INK = '#0F0F12,#0F0F12'
+C_SKY = {  # глава: (небо, тон)
+    'news': (INK, 'dark'), 'concept': ('#EADCFF,#FFD9E8', 'light'), 'about': ('#FFE6DA,#EDE3FF', 'light'),
+    'programs': (INK, 'dark'), 'food': ('#DDEEFF,#EEDDFF', 'light'), 'teachers': (INK, 'dark'),
+    'safety': ('#FFE1EC,#FFE9D8', 'light'), 'extra': (INK, 'dark'), 'transfer': ('#E6DDFF,#D9EEFF', 'light'),
+    'summer': (INK, 'dark'), 'reviews': ('#FFDCE9,#E8DCFF', 'light'), 'admission': (INK, 'dark'),
+    'gallery': (INK, 'dark'), 'act-night': (INK, 'dark'), 'signup': (INK, 'dark'),
+}  # небо и тон предыдущей главы — главы собираются по порядку страницы
+
+
+def section(id_, title, body, sky, tone='light', cls='', extra=''):
+    """Глава страницы. Небо главы — две краски сверху вниз (--s1, --s2); вверху оно перетекает из неба
+    предыдущей главы (--s0) через середину --sb. Если тон меняется (светлая ↔ тёмная), переход длиннее
+    и текст главы начинается ниже него (is-cut)."""
+    if id_ in C_SKY:
+        sky, tone = C_SKY[id_]
+    s1, s2 = sky.split(',')
+    s0 = _SKY['prev'] or s1
+    prev_tone = _SKY['tone']
+    cut = prev_tone is not None and prev_tone != tone
+    _SKY['prev'], _SKY['tone'] = s2, tone
+    # середина перехода: из тёмного в светлое — бледный тон новой главы (без грязно-серой середины), иначе — смесь двух
+    sb = mix(s1, '#FFFFFF', .55) if (cut and tone == 'light') else mix(s0, s1, .5)
+    classes = f'sc sc--{tone}' + (' is-cut' if cut else '') + (f' {cls}' if cls else '')
+    return (f'<section class="{classes}" id="{id_}" data-title="{e(title)}" data-tone="{tone}" style="--s0:{s0};--sb:{sb};--s1:{s1};--s2:{s2}"{extra}>\n'
+            f'{body}\n</section>\n')
+
+
+# ---------------------------------------------------------------- шапка, меню
+def header():
+    return f'''<header class="hd" id="hd">
+  <a class="hd__logo" href="#top" data-go="top" aria-label="Ай Про, в начало"><img class="w" src="assets/img/wordmark-aipro.webp" alt=""><img class="n" src="assets/img/wordmark-aipro-navy.webp" alt=""></a>
+  <span class="hd__ch" id="chapName" aria-hidden="true"></span>
+  <button class="hd__help" type="button" data-open="helper" aria-label="Вопросы о школе">{I('message-circle-question-mark')}</button>
+  <button class="hd__menu" id="menuBtn" type="button" aria-haspopup="dialog" aria-controls="menu" aria-expanded="false"><span class="hd__bars" aria-hidden="true"><i></i><i></i></span><span class="hd__lbl">Меню</span></button>
+</header>
+'''
+
+
+def menu_dialog():
+    items = []
+    for target, label, kind in MENU:
+        if kind == 'dialog':
+            items.append(f'<li><a href="#{target}" data-open="{target}" class="menu__doc">{I("file-text")}<span>{e(label)}</span></a></li>')
+        else:
+            items.append(f'<li><a href="#{target}" data-go="{target}"><span>{e(label)}</span>{I("arrow-right")}</a></li>')
+    c = CONTACTS
+    return f'''<dialog class="drawer" id="menu" aria-label="Меню разделов">
+  <div class="drawer__in">
+    <div class="drawer__top">
+      <a class="drawer__logo" href="#top" data-go="top"><img src="assets/img/wordmark-aipro-navy.webp" alt="Ай Про"></a>
+      <button class="xbtn" type="button" data-close aria-label="Закрыть меню">{I('x')}</button>
+    </div>
+    <nav aria-label="Разделы сайта"><ul class="menu">{''.join(items)}</ul></nav>
+    <a class="drawer__cta" href="#signup" data-go="signup"><span><b>Запишитесь на бесплатный пробный день</b><small>Три дня бесплатно и без обязательств</small></span>{I('arrow-right')}</a>
+    <div class="drawer__contacts">
+      <a class="drawer__phone" href="{c['phone_href']}">{I('phone')}<span>{e(c['phone'])}<small>{e(c['hours'])}</small></span></a>
+      <div class="socials">
+        <a href="{c['wa']}" target="_blank" rel="noopener">{I('message-circle')}WhatsApp</a>
+        <a href="{c['tg']}" target="_blank" rel="noopener">{I('send')}Telegram</a>
+        <a href="{c['vk']}" target="_blank" rel="noopener"><b class="sb">VK</b>ВКонтакте</a>
+        <a href="{c['max']}" target="_blank" rel="noopener"><b class="sb">M</b>MAX</a>
+      </div>
+      <a class="drawer__addr" href="{c['map']}" target="_blank" rel="noopener">{I('map-pin')}<span>{e(c['address'])}<small>Школа на Яндекс Картах</small></span></a>
+      <button class="a11y-toggle" type="button" aria-pressed="false">{I('eye')}<span>Версия для слабовидящих</span></button>
+    </div>
+  </div>
+</dialog>
+'''
+
+
+# ---------------------------------------------------------------- главы
+def hero():
+    """Первый экран: перелив и большая строчная фраза; видео — в стеклянной карточке, она поворачивается
+    при прокрутке, фон уходит в чёрный, и слева появляются три шага к зачислению."""
+    steps = ''.join(f'<li class="rstep"><span class="rstep__i">{sun_svg()}</span><b>{e(t)}</b><small>{e(d)}</small></li>' for t, d in ADMISSION['steps'])
+    body = f'''  <div class="rhero__pin">
+    <div class="rhero__bg" aria-hidden="true"><i class="blob blob--a"></i><i class="blob blob--b"></i><i class="blob blob--c"></i></div>
+    <div class="rhero__dark" aria-hidden="true"></div>
+    <div class="wrap rhero__txt">
+      <h1 class="rhero__h">ребёнку интересно, а&nbsp;вам спокойно</h1>
+      <p class="rhero__cap">{e(INTRO['eyebrow'])} — частная школа полного дня в&nbsp;Ялте для детей 4–18&nbsp;лет</p>
+    </div>
+    <div class="rhero__card" aria-hidden="true">
+      <video class="intro__v" data-src-land="assets/video/tour.mp4" data-src-port="assets/video/hero_school.mp4" data-poster-land="assets/video/tour_poster.jpg" data-poster-port="assets/img/posters/hero_school.jpg" poster="assets/video/tour_poster.jpg" muted loop playsinline autoplay preload="auto"></video>
+      <img class="rhero__mark" src="assets/img/wordmark-aipro.webp" alt="">
+      <span class="rhero__chip">пробные дни · 3 дня бесплатно</span>
+    </div>
+    <ol class="wrap rhero__steps" aria-label="Как поступить">{steps}</ol>
+  </div>'''
+    return section('top', 'Начало', body, '#EADCFF,#FFD9E8', 'light', 'rhero')
+
+
+def news():
+    cards = ''.join(news_card(n) for n in NEWS_SEED)
+    data = json.dumps(NEWS_SEED, ensure_ascii=False)
+    body = f'''  <div class="wrap">
+    <h2 class="news__h">Новости и объявления</h2>
+    <div class="carousel carousel--news">
+      <div class="carousel__track news__list" id="newsList" tabindex="0" aria-label="Новости и объявления">{cards}</div>
+      <div class="carousel__nav"><button type="button" data-dir="-1" aria-label="Предыдущая новость">{I('arrow-left')}</button><button type="button" data-dir="1" aria-label="Следующая новость">{I('arrow-right')}</button></div>
+    </div>
+  </div>
+  <script type="application/json" id="newsSeed">{data}</script>'''
+    return section('news', 'Новости', body, '#FFFFFF,#F2F8FE', 'light', 'news')
+
+
+def news_card(n):
+    date = f'<time>{e(n["date"])}</time>' if n.get('date') else ''
+    tag = f'<span class="news__tag">{e(n.get("tag", ""))}</span>' if n.get('tag') else ''
+    link = f'<a class="news__more" href="{e(n["link"])}">{e(n.get("link_text") or "Подробнее")}{I("arrow-right")}</a>' if n.get('link') else ''
+    img = f'<img src="{e(n["image"])}" alt="" loading="lazy">' if n.get('image') else ''
+    return f'<article class="news__card rv{" is-pin" if n.get("pin") else ""}">{img}<div class="news__meta">{tag}{date}</div><h3>{e(n["title"])}</h3><p>{e(n["text"])}</p>{link}</article>'
+
+
+COLLAGE = [
+    # школьная жизнь: уроки, классы, линейка, олимпиада, особняк (фото из чата со школой)
+    [('k_sand', 'Дошкольники рисуют песком на световых столах', '3/4'), ('lesson-boys', 'Ученики пишут за партами в расписном зале', '4/5'),
+     ('choir', 'Хор учеников на школьном празднике', '1/1'), ('in-library', 'Библиотека с деревянными стеллажами', '3/4')],
+    [('p_main', 'Ученица начальной школы пишет за партой', '4/5'), ('in-lesson', 'Урок у интерактивной доски в классе с лепниной', '3/4'),
+     ('lineup', 'Ученики машут руками на линейке первого сентября', '4/5'), ('chess-teacher', 'Педагог разбирает шахматную партию с учеником', '3/4')],
+    [('lesson-smile', 'Ученицы на уроке в ассамблее', '1/1'), ('olympiad', 'Участники математической олимпиады с грамотами', '4/5'),
+     ('september', 'Баннер «Здравствуй, школа!» над воротами первого сентября', '3/4'), ('facade', 'Фасад старинного особняка школы', '1/1')],
+]
+
+
+def concept():
+    c = CONCEPT
+    cols = ''
+    for ci, col in enumerate(COLLAGE):
+        figs = ''.join(f'<figure style="--ar:{ar}"><img src="{small("assets/img/" + n + ".jpg")}" alt="{e(alt)}" decoding="async"></figure>' for n, alt, ar in col)
+        cols += f'<div class="col" data-speed="{(-0.14, 0.1, -0.24)[ci]}">{figs}</div>'
+    stats = ''
+    for (n, l, _), ic in zip(c['stats'], ('calendar-days', 'users', 'graduation-cap', 'clock')):
+        digits = re.sub(r'[^0-9]', '', n)
+        cnt = f' data-count="{digits}"' if n.isdigit() or n.endswith('+') else ''
+        stats += f'<div class="num rv">{I(ic, "num__i")}<b{cnt}>{e(n)}</b><span>{e(l)}</span></div>'
+    groups = ''
+    for title, tone, items in c['groups']:
+        groups += f'<article class="grp grp--{tone} rv"><h3>{e(title)}</h3>{ilist(items)}</article>'
+    body = f'''  <div class="wrap concept__head">
+    {kick(c['chip'])}
+    {h2(c['title'], c['title_em'], 'h2 h2--xl')}
+    <p class="lead rv">{e(c['lead'])}</p>
+  </div>
+  <div class="cols" aria-label="Фото из жизни школы">{cols}</div>
+  <div class="wrap">
+    <div class="nums">{stats}</div>
+    <div class="grps">{groups}</div>
+  </div>'''
+    return section('concept', 'Концепция', body, '#FFFFFF,#FFFFFF', 'light', 'concept')
+
+
+
+
+def about():
+    a = ABOUT
+    tiles = ''
+    for i, (kind, name, label) in enumerate(a['inside']):
+        if kind == 'video':
+            media = video(name, '', label)
+        else:
+            media = f'<img src="assets/img/{name}.jpg"{ss(name, "(max-width: 900px) 92vw, 45vw" if i % 3 == 0 else "(max-width: 900px) 46vw, 30vw")} alt="{e(label)}" loading="lazy">'
+        tiles += f'<figure class="in-t rv">{media}<figcaption>{e(label)}</figcaption></figure>'
+    pins = ''.join(f'<li data-x="{p['x']}" data-y="{p['y']}"><button type="button" class="pinb" data-open="pin-{p['key']}" aria-haspopup="dialog"><span>{e(p['label'])}{I('plus', 'pinb__plus')}</span></button></li>' for p in PINS)
+    body = f'''  <div class="estate" data-seq="estate" data-frames="61" data-path="assets/seq/estate" data-ext="webp">
+    <div class="pin">
+      <canvas aria-hidden="true"></canvas>
+      <img class="seq__poster" src="assets/seq/estate/f_000.webp" alt="3D-макет особняка школы: дом, сад, бассейн и ворота">
+      <div class="estate__veil" aria-hidden="true"></div>
+      <div class="wrap estate__head">{kick(LEADINS['about'][1])}{h2(a['title'], a['title_em'])}</div>
+      <ul class="pins" aria-label="Что есть на территории">{pins}</ul>
+      <div class="wrap estate__arrive"><b>Добро пожаловать</b><p>Школа ждёт ребёнка с 8:30 до 18:00</p></div>
+    </div>
+  </div>
+  <div class="estate__fade" aria-hidden="true"></div>
+  <div class="wrap about__more">
+    <div class="inside">
+      <div class="inside__head">{kick(a['inside_kick'])}{h2(a['inside_title'], a['inside_em'])}</div>
+      <div class="inside__grid">{tiles}</div>
+      {more('Все фото особняка', 'button', ' data-album="inside"', 'more--pill rv')}
+    </div>
+    <figure class="director rv">
+      <blockquote>{e(a['quote'])}</blockquote>
+      <figcaption>{e(a['sign'])}</figcaption>
+    </figure>
+  </div>'''
+    return section('about', 'О школе', body, '#FFFFFF,#F4F9FE', 'light', 'about')
+
+
+def programs():
+    P = PROGRAMS_INTRO
+    cards = ''
+    for i, p in enumerate(PROGRAMS):
+        sub = f'<span class="lvl__a">{e(p["audience"])}</span>' if p['audience'] else ''
+        cards += f'''<a class="lvl lvl--{p['key']}" style="--i:{i}" href="#m-{p['key']}" data-open="m-{p['key']}" aria-label="{e(p['title'])}, {e(aud(p))}: подробнее о программе">
+      <img class="lvl__bg" src="assets/img/{p['img']}.jpg"{ss(p['img'], '(max-width: 900px) 100vw, 1320px')} alt="" loading="lazy">
+      <span class="lvl__n">0{p['step']}</span>
+      <span class="lvl__c"><span class="lvl__lvl">{e(p['level'])}</span><b class="lvl__t">{e(p['title'])}</b><span class="lvl__chip">{e(p['ages'])}</span>{sub}</span>
+      {more('Программа и расписание', cls='lvl__go')}
+    </a>'''
+    body = f'''  <div class="wrap">
+    {timehead('programs')}
+    {h2(P['title'], P['title_em'])}
+    <div class="stack">{cards}</div>
+  </div>'''
+    return section('programs', 'Программы и расписание', body, '#CFE7FB,#FFF3DA', 'light', 'programs')
+
+
+def food():
+    f = FOOD
+    body = f'''  <div class="wrap split">
+    <div class="split__txt">{timehead('food')}{h2(f['title'], f['title_em'])}{ilist(f['items'], 'rv')}</div>
+    <figure class="ph ph--tall rv"><img src="assets/img/food.jpg" alt="Дети выбирают еду на шведском столе" loading="lazy"></figure>
+  </div>'''
+    return section('food', 'Питание', body, '#8AC8F5,#DDEFFD', 'light', 'food')
+
+
+def teachers():
+    t = TEACHERS
+    cards = ''.join(f'<figure class="person rv"><span class="person__ph"><img src="assets/img/{img}.jpg"{ss(img, "(max-width: 900px) 46vw, 300px")} alt="{e(name)}" loading="lazy"></span><figcaption><b>{e(name)}</b><span>{e(role)}</span></figcaption></figure>' for img, name, role in t['people'])
+    body = f'''  <div class="wrap">
+    {kick(LEADINS['teachers'][1])}
+    {h2(t['title'], t['title_em'])}
+    <div class="people">{cards}</div>
+  </div>'''
+    return section('teachers', 'Педагоги', body, '#A5D3F6,#EAF5FD', 'light', 'teachers')
+
+
+def safety():
+    s = SAFETY
+    body = f'''  <div class="wrap">
+    {kick(LEADINS['safety'][1])}
+    {h2(s['title'], s['title_em'])}
+    <div class="split split--safety">
+      <figure class="ph rv">{video('terr_walk', '', 'Прогулка по территории школы: башня с воротами, парковые дорожки, детская площадка')}<figcaption class="area"><b>{e(s['area'][0])}</b>{e(s['area'][1])}</figcaption></figure>
+      {ilist(s['items'], 'il--big rv')}
+    </div>
+  </div>'''
+    return section('safety', 'Безопасность', body, '#1F5A96,#2A70B4', 'dark', 'safety')
+
+
+def extra():
+    x = EXTRA
+    dirs = ''
+    for dr in x['directions']:
+        dirs += f'''<button type="button" class="dirc rv" data-album="{dr['key']}" aria-label="{e(dr['name'])}: фото и видео">
+      <span class="dirc__ph"><img src="assets/img/{dr['cover']}.jpg"{ss(dr['cover'], '(max-width: 900px) 92vw, 30vw')} alt="" loading="lazy"></span>
+      <span class="dirc__cap"><b>{e(dr['name'])}</b><span>{e(' · '.join(dr['list']))}</span>{more('Фото и видео')}</span>
+    </button>'''
+    guests = ''.join(f'<article class="guest rv"><span class="guest__mono" aria-hidden="true">{e(n[0])}</span><div><b>{e(n)}</b><span class="guest__what">{e(w)}</span><p>{e(c)}</p></div></article>' for n, w, ill, c in x['guests'])
+    body = f'''  <div class="wrap">
+    {timehead('extra')}
+    {h2(x['title'], x['title_em'])}
+    <p class="lead rv">{e(x['lead'])}</p>
+    <div class="dirs">{dirs}</div>
+    <div class="meet">
+      <h3 class="h3" data-split>{e(x['meet_title'])}</h3>
+      <p class="lead rv">{e(x['meet_lead'])}</p>
+      <div class="guests">{guests}</div>
+    </div>
+  </div>'''
+    return section('extra', 'Авторская программа', body, '#FFD36A,#FFF0C4', 'light', 'extra')
+
+
+def transfer():
+    t = TRANSFER
+    (i1, n1), (i2, n2) = t['route']
+    body = f'''  <div class="wrap">
+    <div class="split">
+      <div class="split__txt">{timehead('transfer')}{h2(t['title'], t['title_em'])}<p class="lead rv">{e(t['lead'])}</p>{ilist(t['items'], 'rv')}</div>
+      <figure class="ph rv"><img src="assets/img/bus.jpg" alt="Микроавтобус школьного трансфера на дорожке у парка" loading="lazy"></figure>
+    </div>
+    <div class="route rv" data-route aria-hidden="true">
+      <svg viewBox="0 0 1000 160" preserveAspectRatio="none"><path class="route__line" d="M70 120 C 240 120, 280 40, 430 50 S 640 140, 780 90 S 900 40, 930 40"/><path class="route__done" d="M70 120 C 240 120, 280 40, 430 50 S 640 140, 780 90 S 900 40, 930 40"/></svg>
+      <span class="route__pt route__pt--a">{I(i1)}<b>{e(n1)}</b></span>
+      <span class="route__pt route__pt--b">{I(i2)}<b>{e(n2)}</b></span>
+      <span class="route__bus">{I('bus')}</span>
+    </div>
+  </div>'''
+    return section('transfer', 'Трансфер', body, '#F6A26C,#FFDAB4', 'light', 'transfer')
+
+
+def summer():
+    s = SUMMER
+    eps = ''.join(f'''<article class="ep rv"><span class="ep__ph"><img src="assets/img/{img}.jpg"{ss(img, '(max-width: 900px) 92vw, 30vw')} alt="{e(alt)}" loading="lazy"></span>
+      <div class="ep__txt"><p class="ep__k">{e(mon)}</p><h3>{e(title)}</h3><p>{text}</p></div></article>''' for n, mon, title, text, img, alt in s['episodes'])
+    body = f'''  <div class="wrap">
+    {kick('Июнь · Июль · Август')}
+    {h2(s['title'], s['title_em'])}
+    <p class="lead rv">{e(s['lead'])}</p>
+    <figure class="ph ph--wide rv">{video('summer_yard', '', 'Летний клуб во дворе школы: рисунки мелками и танцы')}</figure>
+    {ilist(s['facts'], 'il--2 rv')}
+    <div class="eps">{eps}</div>
+    {more('Смотреть фото и видео лета', 'button', ' data-album="summer"', 'more--pill rv')}
+  </div>'''
+    return section('summer', 'Летний клуб', body, '#FFE27E,#FFF6D8', 'light', 'summer')
+
+
+def reviews():
+    """Отзывы — как в версии B: рейтинг Яндекс Карт плашкой и карточки отзывов, листаются кнопками-стрелками."""
+    r = REVIEWS
+    cards = ''.join(f'<figure class="review"><span class="review__mk">{I("quote")}</span><blockquote>{q}</blockquote><figcaption><b>{e(n)}</b><span>{e(src)}</span></figcaption></figure>' for q, n, src in r['items'])
+    st5 = ''.join(I('star', 'st') for _ in range(5))
+    stars = f'<span class="stars" style="--v:{r["rating_value"] / 5:.3f}"><span class="stars__bg">{st5}</span><span class="stars__fg">{st5}</span></span>'
+    body = f'''  <div class="wrap">
+    {kick('Что говорят о школе')}
+    {h2(r['title'], r['title_em'])}
+    <a class="rating rv" href="{CONTACTS['map']}" target="_blank" rel="noopener"><b>{r['rating']}</b>{stars}<span class="rating__t">{e(r['count'])} на Яндекс Картах</span><span class="rating__go">Все отзывы{I('arrow-up-right')}</span></a>
+    <div class="carousel rv">
+      <div class="carousel__track" tabindex="0" aria-label="Отзывы родителей">{cards}</div>
+      <div class="carousel__nav"><button type="button" data-dir="-1" aria-label="Предыдущий отзыв">{I('arrow-left')}</button><button type="button" data-dir="1" aria-label="Следующий отзыв">{I('arrow-right')}</button></div>
+    </div>
+  </div>'''
+    return section('reviews', 'Отзывы', body, '#B24F4E,#2B3F7A', 'dark', 'reviews')
+
+
+def admission():
+    a = ADMISSION
+    steps = ''.join(f'<li class="rv"><span class="step__n">{i + 1}</span><p><b>{e(t)}</b>{e(d)}</p></li>' for i, (t, d) in enumerate(a['steps']))
+    inc = ''.join(f'<li>{I("check")}{e(t)}</li>' for t in a['included'])
+    lbl, head, sub = a['cost']
+    body = f'''  <div class="wrap">
+    {kick('Поступление')}
+    {h2(a['title'], a['title_em'])}
+    <div class="adm">
+      <ol class="steps">{steps}</ol>
+      <article class="price rv">
+        <p class="price__lbl">{e(lbl)}</p>
+        <h3 class="price__h">{e(head)}</h3>
+        <p class="price__sub">{e(sub)}</p>
+        <p class="price__lbl">Уже входит в стоимость</p>
+        <ul class="price__inc">{inc}</ul>
+        <p class="price__sale">{I('badge-percent')}<span><b>{e(a['sale'][0])}</b>{e(a['sale'][1])}</span></p>
+        <a class="pill pill--sun price__go" href="#signup" data-go="signup">Прийти на пробные дни {I('arrow-right')}</a>
+      </article>
+      <a class="doclink rv" href="#docs" data-open="docs">{I('file-badge')}<span><b>Лицензия и документы</b><small>госаккредитация, холдинг Mirapolis</small></span>{I('arrow-right')}</a>
+    </div>
+  </div>'''
+    return section('admission', 'Поступление', body, '#22356B,#162A50', 'dark', 'admission')
+
+
+def gallery():
+    cards = ''
+    for i, (k, label) in enumerate(GALLERY_TABS):
+        n = sum(1 for g in GALLERY if g[0] == k)
+        cards += f'''<button type="button" class="alb rv" data-album="{k}" aria-label="{e(label)}: {n} фото и видео">
+      <span class="alb__ph"><img src="assets/img/{GALLERY_COVERS[k]}.jpg"{ss(GALLERY_COVERS[k], '(max-width: 900px) 92vw, 40vw')} alt="" loading="lazy"></span>
+      <span class="alb__cap"><b>{e(label)}</b><small>{n} фото и видео</small></span>
+    </button>'''
+    body = f'''  <div class="wrap">
+    {kick('Галерея')}
+    {h2('Фото и видео', 'школы')}
+    <div class="albs">{cards}</div>
+  </div>'''
+    return section('gallery', 'Галерея', body, '#152A52,#0A121C', 'dark', 'gallery')
+
+
+def night():
+    a = ACTS['night']
+    body = f'''  <div class="nightseq" data-seq="night" data-frames="55" data-path="assets/seq/night" data-ext="webp">
+    <div class="pin">
+      <canvas aria-hidden="true"></canvas>
+      <img class="seq__poster" src="assets/seq/night/f_054.webp" alt="Особняк школы вечером, в окнах горит свет">
+      <h2 class="night__bye">{e(a['name'])}</h2>
+      <div class="night__cta wrap">
+        <a class="badge" href="#signup" data-go="signup" aria-label="Записаться на 3 бесплатных пробных дня">
+          <svg class="badge__ring" viewBox="0 0 100 100" aria-hidden="true"><defs><path id="badgeCirc" d="M50 50m-38 0a38 38 0 1 1 76 0a38 38 0 1 1-76 0"/></defs><text><textPath href="#badgeCirc">ЗАПИСАТЬСЯ · 3 ДНЯ БЕСПЛАТНО ·</textPath></text></svg>
+          {I('arrow-up-right', 'badge__arrow')}
+        </a>
+        <p>Ждём вас и ребёнка на пробных днях: 3 дня бесплатно и без обязательств</p>
+      </div>
+    </div>
+  </div>'''
+    return section('act-night', a['name'], body, '#0A121C,#0A121C', 'dark', 'night')
+
+
+def signup():
+    s = SIGNUP
+    c = CONTACTS
+    body = f'''  <div class="wrap">
+    <div class="split split--signup">
+      <div class="split__txt">{kick('Запись')}{h2(s['title'], s['title_em'])}<p class="lead rv">{e(s['lead'])}</p>
+        <p class="signup__call">Или позвоните: <a href="{c['phone_href']}">{e(c['phone'])}</a></p></div>
+      <div class="formcard rv">
+        <form class="form" id="signupForm" novalidate data-endpoint="">
+          <label class="field" for="f-name"><span>Имя <i>*</i></span><input id="f-name" name="name" autocomplete="name" placeholder="Как вас зовут" required><small class="field__err">Напишите имя, чтобы мы знали, к кому обращаться.</small></label>
+          <label class="field" for="f-age"><span>Возраст ребёнка</span><input id="f-age" name="age" inputmode="numeric" placeholder="Например, 8"></label>
+          <label class="field" for="f-phone"><span>Телефон <i>*</i></span><input id="f-phone" name="phone" type="tel" autocomplete="tel" placeholder="+7 (978) 000-00-00" required><small class="field__err">Введите номер телефона, чтобы мы могли перезвонить.</small></label>
+          <button class="pill pill--sun form__go" type="submit">Записаться {I('arrow-right')}</button>
+          <p class="form__note">{e(s['note'])}</p>
+        </form>
+        <div class="sent" id="signupSent" hidden tabindex="-1">
+          <span class="sent__ok">{I('check')}</span>
+          <h3 id="sentTitle">Остался один шаг</h3>
+          <p id="sentText">Отправьте заявку в удобный мессенджер — текст уже готов. Или позвоните, мы подберём даты пробных дней.</p>
+          <div class="sent__btns">
+            <a class="pill pill--green" id="sentWa" href="{c['wa']}" target="_blank" rel="noopener">{I('message-circle')} Отправить в WhatsApp</a>
+            <a class="msgr" href="{c['tg']}" target="_blank" rel="noopener">{I('send')}Telegram</a>
+            <a class="msgr" href="{c['max']}" target="_blank" rel="noopener"><b class="sb">M</b>MAX</a>
+            <a class="msgr" href="{c['phone_href']}">{I('phone')}{e(c['phone'])}</a>
+          </div>
+          <button class="linkbtn" type="button" id="sentBack">Изменить данные</button>
+        </div>
+      </div>
+    </div>
+    {footer()}
+  </div>'''
+    return section('signup', 'Запись на пробные дни', body, '#0A121C,#0A121C', 'dark', 'signup')
+
+
+def footer():
+    c = CONTACTS
+    return f'''<footer class="foot">
+      <div class="foot__brand"><img src="assets/img/wordmark-aipro.webp" width="480" height="377" alt="Ай Про"><p>Частная школа полного дня в Ялте для детей 4–18 лет</p></div>
+      <div class="foot__contacts">
+        <a class="foot__phone" href="{c['phone_href']}">{e(c['phone'])}</a><span>{e(c['hours'])}</span>
+        <a href="mailto:{c['email']}">{e(c['email'])}</a>
+        <a href="{c['map']}" target="_blank" rel="noopener">{e(c['address'])}</a>
+        <div class="socials socials--row">
+          <a href="{c['wa']}" target="_blank" rel="noopener">WhatsApp</a>
+          <a href="{c['tg']}" target="_blank" rel="noopener">Telegram</a>
+          <a href="{c['vk']}" target="_blank" rel="noopener">ВКонтакте</a>
+          <a href="{c['max']}" target="_blank" rel="noopener">MAX</a>
+        </div>
+      </div>
+      <div class="foot__map">
+        <iframe title="Ай Про на Яндекс Картах" src="about:blank" data-src="{c['map_embed']}" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        <a class="foot__maplink" href="{c['map']}" target="_blank" rel="noopener">{I('map-pin')}Открыть на Яндекс Картах</a>
+      </div>
+      <div class="foot__bottom">
+        <span>© 2026 Ай Про (IPROSCHOOL)</span>
+        <a href="#docs" data-open="docs">Сведения об образовательной организации</a>
+        <button type="button" class="a11y-toggle a11y-toggle--link" aria-pressed="false">{I('eye')}Версия для слабовидящих</button>
+        <a href="#top" data-go="top">Наверх {I('arrow-up')}</a>
+      </div>
+    </footer>'''
+
+
+# ---------------------------------------------------------------- окна
+def program_dialog(p, prev, nxt):
+    k = p['key']
+    L = LABELS
+    base = ''.join(f'<li class="{"hl" if len(b) > 2 and b[2] else ""}">{I("sparkles" if len(b) > 2 and b[2] else "check")}<span><b>{e(b[0])}</b>{("<small>" + e(b[1]) + "</small>") if len(b) > 1 and b[1] else ""}</span></li>' for b in p['base'])
+    dl = lambda xs, cls='': f'<ul class="dl2{(" " + cls) if cls else ""}">' + ''.join(f'<li>{e(x)}</li>' for x in xs) + '</ul>'
+    req = (f'<p class="sub"><span class="tag tag--fill">{L["required"]}</span></p>' + dl(p['author_required'], 'dl2--fill')) if p['author_required'] else ''
+    choice = f'<p class="sub"><span class="tag">{L["choice"]}</span></p>' + dl(p['author_choice'])
+    ind = dl(p['individual'])
+    day = ''.join(f'<li><time>{e(t)}</time><span>{e(w)}</span></li>' for t, w in p['day'])
+    toc = [(f'{k}-base', L['base']), (f'{k}-author', 'Авторская программа'), (f'{k}-ind', L['individual']), (f'{k}-day', p['day_title'])]
+    toc_h = ''.join(f'<a href="#{a}" data-jump><b>0{i + 1}</b>{e(t)}</a>' for i, (a, t) in enumerate(toc))
+    return f'''<dialog class="pm pm--{k}" id="m-{k}" data-k="{k}" aria-labelledby="t-{k}">
+  <div class="pm__bar"><span><b>{e(p['title'])}</b> · {e(p['level'])}</span><button class="xbtn" type="button" data-close aria-label="Закрыть">{I('x')}</button></div>
+  <section class="pm__hero">
+    <div class="pm__hero-in">
+      <div><p class="pm__lvl">0{p['step']} · {e(p['level'])}</p><h2 class="pm__t" id="t-{k}">{e(p['title'])}</h2><p class="pm__aud">{e(aud(p))}</p></div>
+      <span class="pm__ph"><img src="assets/img/{p['img']}.jpg" alt="{e(p['alt'])}" loading="lazy"></span>
+    </div>
+  </section>
+  <div class="pm__body">
+    <nav class="pm__toc" aria-label="Оглавление программы">{toc_h}</nav>
+    <section class="dsec" id="{k}-base"><h3>{L['base']}</h3><ul class="bl">{base}</ul></section>
+    <section class="dsec" id="{k}-author"><h3>{L['author']}</h3>{req}{choice}</section>
+    <section class="dsec" id="{k}-ind"><div class="dsec__h"><h3>{L['individual']}</h3><span class="note">{L['individual_note']}</span></div>{ind}</section>
+    <section class="dsec" id="{k}-day"><h3>{e(p['day_title'])}</h3><ol class="times">{day}</ol></section>
+    <nav class="pn" aria-label="Другие программы">
+      <a href="#m-{prev['key']}" data-open="m-{prev['key']}"><small>← {e(prev['level'])}</small><b>{e(prev['title'])}</b></a>
+      <a href="#m-{nxt['key']}" data-open="m-{nxt['key']}"><small>{e(nxt['level'])} →</small><b>{e(nxt['title'])}</b></a>
+    </nav>
+    <div class="pm__cta"><span>Приходите на пробные дни</span><a class="pill pill--sun" href="#signup" data-close-go="signup">Записаться {I('arrow-right')}</a></div>
+  </div>
+</dialog>
+'''
+
+
+def pin_dialogs():
+    out = ''
+    for p in PINS:
+        kind, target, label = p['go']
+        btn = (f'<button class="pill pill--sun" type="button" data-album="{target}">{e(label)} {I("arrow-right")}</button>' if kind == 'album'
+               else f'<a class="pill pill--sun" href="#{target}" data-close-go="{target}">{e(label)} {I("arrow-right")}</a>')
+        out += f'''<dialog class="sheet pinsheet" id="pin-{p['key']}" aria-labelledby="pinT-{p['key']}">
+  <figure class="pinsheet__ph"><img src="assets/img/{p['photo']}.jpg"{ss(p['photo'], '(max-width: 900px) 100vw, 720px')} alt="{e(p['alt'])}" loading="lazy"><button class="xbtn" type="button" data-close aria-label="Закрыть">{I('x')}</button></figure>
+  <div class="sheet__body">
+    <p class="kick">{e(p['label'])}</p>
+    <h2 class="pinsheet__t" id="pinT-{p['key']}">{e(p['title'])}</h2>
+    {ilist(p['items'])}
+    <div class="pinsheet__go">{btn}</div>
+  </div>
+</dialog>
+'''
+    return out
+
+
+def org_rows():
+    """Подраздел «Основные сведения» — пункты а)–з) приказа, одинаково в окне и на странице sveden/common/."""
+    o = ORG
+    phones = ''.join(f'<span class="kv__ph">{e(who)}: <a href="{href}">{e(num)}</a></span>' for who, num, href in o['phones'])
+    rows = [
+        ('Полное наименование', f'{e(o["full_name"])}<span class="kv__sub">Сокращённое: {e(o["short_name"])}</span>'),
+        ('Дата создания', e(o['founded'])),
+        ('Учредитель', e(o['founder'])),
+        ('Место нахождения', e(o['location'])),
+        ('График работы', e(o['hours'])),
+        ('Контактные телефоны', phones),
+        ('Электронная почта', f'<a href="mailto:{e(o["email"])}">{e(o["email"])}</a>'),
+        ('Место осуществления образовательной деятельности', e(o['edu_place'])),
+        ('Лицензия', f'{e(o["license"])}<span class="kv__sub">{e(o["license_kinds"])}</span>'),
+    ]
+    return '<dl class="kv kv--org">' + ''.join(f'<dt>{t}</dt><dd>{v}</dd>' for t, v in rows) + '</dl>'
+
+
+def docs_dialog():
+    docs = ''.join(f'<li>{I(ic)}<span><b>{e(t)}</b>{e(s)}</span></li>' for ic, t, s in ADMISSION['docs'])
+    return f'''<dialog class="sheet" id="docs" aria-labelledby="docsT">
+  <div class="sheet__bar"><h2 id="docsT">Сведения об образовательной организации</h2><button class="xbtn" type="button" data-close aria-label="Закрыть">{I('x')}</button></div>
+  <div class="sheet__body">
+    <p class="label">Основные сведения</p>
+    {org_rows()}
+    <a class="more docs__page" href="sveden/common/">Раздел на отдельной странице{I('arrow-right')}</a>
+    <p class="label">Лицензия и документы</p>
+    <ul class="docs__list">{docs}</ul>
+    <p class="label">Реквизиты и документы</p>
+    <p class="ph-note">ИНН, ОГРН, сканы лицензии и уставных документов разместим здесь по данным школы.</p>
+  </div>
+</dialog>
+'''
+
+
+def sveden_page():
+    """Отдельная страница sveden/common/ — адрес подраздела «Основные сведения» по требованиям к сайту."""
+    return f'''<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Основные сведения · {e(ORG['short_name'])}</title>
+<link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Days+One&family=Onest:wght@400;500;600&display=swap">
+<style>
+:root{{--navy:#0A2C55;--blue:#2A70B4;--ink:#22364F}}
+*{{box-sizing:border-box}}
+body{{margin:0;background:#F4F8FC;color:var(--navy);font:400 17px/1.55 "Onest",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;-webkit-text-size-adjust:100%}}
+.w{{max-width:900px;margin:0 auto;padding:28px max(20px,env(safe-area-inset-left)) 64px}}
+.top{{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:28px}}
+.top img{{height:40px;width:auto}}
+.top a{{color:var(--blue);font-weight:600;text-decoration:none}}
+nav.crumbs{{font-size:14px;color:var(--ink);margin-bottom:10px}}
+nav.crumbs a{{color:var(--blue)}}
+h1{{margin:0 0 6px;font:400 clamp(26px,5vw,40px)/1.15 "Days One",system-ui,sans-serif;letter-spacing:-.01em}}
+h2{{margin:28px 0 14px;font:400 22px/1.2 "Days One",system-ui,sans-serif}}
+.card{{background:#fff;border-radius:22px;padding:8px 22px;box-shadow:0 10px 30px rgba(10,44,85,.08)}}
+.kv{{margin:0}}
+.kv dt{{padding-top:16px;font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--blue)}}
+.kv dd{{margin:4px 0 0;padding-bottom:16px;border-bottom:1px solid rgba(10,44,85,.1);font-weight:500}}
+.kv dd:last-child{{border-bottom:0}}
+.kv__sub,.kv__ph{{display:block;margin-top:4px;color:var(--ink)}}
+.kv a{{color:var(--blue);font-weight:600}}
+.note{{margin-top:22px;padding:14px 16px;border-radius:16px;background:#FFF4CF;font-size:15px}}
+@media (min-width:720px){{.kv{{display:grid;grid-template-columns:240px 1fr;column-gap:24px}}.kv dt{{padding-bottom:16px;border-bottom:1px solid rgba(10,44,85,.1)}}.kv dt:nth-last-of-type(1){{border-bottom:0}}}}
+</style>
+</head>
+<body>
+<div class="w">
+  <div class="top"><a href="../../"><img src="../../assets/img/wordmark-aipro-navy.webp" alt="Ай Про — на главную"></a><a href="../../">На главную</a></div>
+  <nav class="crumbs" aria-label="Путь"><a href="../../">Главная</a> / Сведения об образовательной организации / Основные сведения</nav>
+  <h1>Основные сведения</h1>
+  <p>Сведения об образовательной организации</p>
+  <div class="card">{org_rows()}</div>
+  <p class="note">Остальные подразделы раздела — структура и органы управления, документы, образование, руководство, педагогический состав и другие — будут размещены по данным организации.</p>
+</div>
+</body>
+</html>
+'''
+
+
+def media_item(kind, src, alt):
+    if kind == 'video':
+        pf = f'assets/img/posters/{src}.jpg'
+        return {'k': 'v', 'full': f'assets/video/{src}.mp4', 'th': small(pf), 'pf': pf, 'alt': alt}
+    return {'k': 'i', 'full': f'assets/img/{src}.jpg', 'th': small(f'assets/img/{src}.jpg'), 'alt': alt}
+
+
+def album_dialog():
+    data = {}
+    for k, label in GALLERY_TABS:
+        data[k] = {'t': label, 'g': 'gal', 'items': [media_item(kind, src, alt) for cat, kind, src, alt in GALLERY if cat == k]}
+    for dr in EXTRA['directions']:
+        data[dr['key']] = {'t': dr['name'], 'g': 'dir', 'sub': ' · '.join(dr['list']), 'items': [media_item(kind, src, alt) for kind, src, alt in dr['media']]}
+    js = json.dumps(data, ensure_ascii=False)
+    return f'''<dialog class="album" id="album" aria-labelledby="albumT">
+  <div class="album__bar"><h2 id="albumT">Фото и видео</h2><button class="xbtn" type="button" data-close aria-label="Закрыть">{I('x')}</button></div>
+  <div class="album__body">
+    <nav class="album__tabs" id="albumTabs" aria-label="Разделы"></nav>
+    <p class="album__sub" id="albumSub" hidden></p>
+    <div class="album__grid" id="albumGrid"></div>
+  </div>
+  <template id="albumPlay">{I('play')}</template>
+  <script type="application/json" id="albumData">{js}</script>
+</dialog>
+'''
+
+
+def lightbox():
+    return f'''<dialog class="lightbox" id="lightbox" aria-label="Просмотр фото и видео">
+  <button class="xbtn lightbox__x" type="button" data-close aria-label="Закрыть">{I('x')}</button>
+  <div class="lightbox__stage" id="lbStage"></div>
+  <p class="lightbox__cap" id="lbCap"></p>
+  <button class="lightbox__nav lightbox__nav--prev" type="button" data-lb="-1" aria-label="Предыдущее">{I('chevron-left')}</button>
+  <button class="lightbox__nav lightbox__nav--next" type="button" data-lb="1" aria-label="Следующее">{I('chevron-right')}</button>
+</dialog>
+'''
+
+
+def helper_dialog():
+    c = CONTACTS
+    qs = ''.join(f'<button type="button" data-q="{i}">{e(q)}</button>' for i, (q, _) in enumerate(HELPER))
+    data = json.dumps([{'q': q, 'a': a} for q, a in HELPER], ensure_ascii=False)
+    return f'''<dialog class="helper" id="helper" aria-labelledby="helperT">
+  <div class="helper__bar"><span class="helper__ava">{sun_svg()}</span><span><b id="helperT">Помощник Ай Про</b><small>Отвечаю на вопросы о школе</small></span><button class="xbtn" type="button" data-close aria-label="Закрыть помощника">{I('x')}</button></div>
+  <div class="helper__log" id="helperLog" aria-live="polite"><p class="bub">Здравствуйте! Подскажу по школе Ай Про — выберите вопрос ниже.</p></div>
+  <div class="helper__qs" id="helperQs">{qs}</div>
+  <p class="helper__foot">Не нашли ответ? Позвоните <a href="{c['phone_href']}">{e(c['phone'])}</a>, напишите в <a href="{c['wa']}" target="_blank" rel="noopener">WhatsApp</a> или <a href="{c['tg']}" target="_blank" rel="noopener">Telegram</a>.</p>
+  <script type="application/json" id="helperData">{data}</script>
+</dialog>
+<a class="ask dock-cta" href="#signup" data-go="signup">Записаться на пробные дни</a>
+'''
+
+
+# ---------------------------------------------------------------- неразрывные пробелы
+NB = '\u00A0'
+SHORT = r'а|и|в|во|с|со|к|ко|у|о|об|обо|от|до|на|по|за|из|изо|без|для|под|над|при|про|не|ни|но|да|я|мы|вы|ее|её|их|это|все|всё|как|что|или|уже|ещё|еще|так|при'
+RE_SHORT = re.compile(r'(?<![\w\-])(' + SHORT + r') (?=(\S+))', re.I)
+RE_TAIL = re.compile(r'(?<![\w\-])(' + SHORT + r') $', re.I)
+RE_AFTER = re.compile(r' (же|ли|бы)(?![\w\-])', re.I)
+RE_NUM = re.compile(r'(\d) (?=[\dА-Яа-яЁё%₽])')
+RE_DASH = re.compile(r' ([—–]) ')
+
+
+def typo(t):
+    """Короткие слова и числа не остаются в конце строки, тире не начинает строку, «Ай Про» не разрывается."""
+    # связка не длиннее 15 знаков, иначе крупный заголовок не влезет в строку на телефоне
+    t = RE_SHORT.sub(lambda m: m.group(1) + (NB if len(m.group(1)) + len(m.group(2)) <= 15 else ' '), t)
+    t = RE_AFTER.sub(lambda m: NB + m.group(1), t)
+    t = RE_NUM.sub(lambda m: m.group(1) + NB, t)
+    t = RE_DASH.sub(lambda m: NB + m.group(1) + ' ', t)
+    return t.replace('Ай Про', 'Ай' + NB + 'Про')
+
+
+def typo_html(h):
+    """Применяет typo() к тексту между тегами (и к данным JSON в странице); стили, разметка и пути SVG не трогаются."""
+    out, skip = [], None
+    for part in re.split(r'(<[^>]+>)', h):
+        if part.startswith('<'):
+            low = part.lower()
+            if low.startswith('<style') or (low.startswith('<script') and 'application/json' not in low):
+                skip = 'style' if low.startswith('<style') else 'script'
+            elif skip and low.startswith('</' + skip):
+                skip = None
+            out.append(part)
+        else:
+            out.append(part if skip else RE_TAIL.sub(lambda m: m.group(1) + NB, typo(part)))
+    return ''.join(out)
+
+
+def sprite():
+    out = []
+    for n in sorted(USED):
+        p = os.path.join(ICONS, n + '.svg')
+        if not os.path.exists(p):
+            os.makedirs(ICONS, exist_ok=True)
+            shutil.copy(os.path.join(LUCIDE_FULL, n + '.svg'), p)
+        s = open(p, encoding='utf8').read()
+        inner = re.sub(r'\s+', ' ', re.search(r'>\s*(.*)</svg>', s, re.S).group(1)).strip()
+        out.append(f'<symbol id="i-{n}" viewBox="0 0 24 24">{inner}</symbol>')
+    return '<svg class="sprite" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">' + ''.join(out) + '</svg>'
+
+
+def asset_v(path):
+    try:
+        return hashlib.md5(open(os.path.join(OUT, path), 'rb').read()).hexdigest()[:8]
+    except FileNotFoundError:
+        return 'dev'
+
+
+def page():
+    main = (hero() + news() + concept() + about() + programs() + food() + teachers() + safety()
+            + extra() + transfer() + summer() + reviews() + admission() + gallery() + night() + signup())
+    n = len(PROGRAMS)
+    dialogs = ''.join(program_dialog(p, PROGRAMS[(i - 1) % n], PROGRAMS[(i + 1) % n]) for i, p in enumerate(PROGRAMS))
+    dialogs += menu_dialog() + pin_dialogs() + docs_dialog() + album_dialog() + lightbox() + helper_dialog()
+    desc = 'Ай Про (IPROSCHOOL) — частная школа полного дня в Ялте для детей 4–18 лет: детский сад и школа в историческом особняке, малые группы до 14 человек, языки с носителями, кружки, питание и трансфер. Три пробных дня бесплатно.'
+    return f'''<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ай Про · частная школа полного дня в Ялте</title>
+<meta name="description" content="{e(desc)}">
+<meta name="theme-color" content="#0F0F12">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:site_name" content="Ай Про · IPROSCHOOL">
+<meta property="og:title" content="Ай Про · частная школа полного дня в Ялте">
+<meta property="og:description" content="Детский сад и школа в историческом особняке: малые группы, языки с носителями, кружки, питание и трансфер. Три пробных дня бесплатно.">
+<meta property="og:image" content="assets/og.jpg">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600;700&family=JetBrains+Mono:wght@500;600&family=Onest:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="assets/css/site.css?v={asset_v('assets/css/site.css')}">
+<link rel="stylesheet" href="assets/css/site-c.css?v={asset_v('assets/css/site-c.css')}">
+<script>document.documentElement.classList.add('js');try{{if(localStorage.getItem('ipro-a11y')==='1')document.documentElement.classList.add('a11y')}}catch(e){{}}</script>
+</head>
+<body>
+{{SPRITE}}
+<a class="skip" href="#concept">К содержанию</a>
+{header()}<main id="main">
+{main}</main>
+{dialogs}<script src="assets/js/site.js?v={asset_v('assets/js/site.js')}" defer></script>
+<script src="assets/js/site-c.js?v={asset_v('assets/js/site-c.js')}" defer></script>
+</body>
+</html>
+'''
+
+
+if __name__ == '__main__':
+    html_out = page()
+    html_out = html_out.replace('{SPRITE}', sprite())
+    html_out = add_dims(html_out)
+    html_out = typo_html(html_out)
+    open(os.path.join(OUT, 'index.html'), 'w', encoding='utf8').write(html_out)
+    # подраздел «Основные сведения» по адресу sveden/common/, sveden/ ведёт туда же
+    for sub, body in (('sveden/common', typo_html(sveden_page())),
+                      ('sveden', '<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=common/"><title>Сведения об образовательной организации</title><a href="common/">Основные сведения</a>')):
+        os.makedirs(os.path.join(OUT, sub), exist_ok=True)
+        open(os.path.join(OUT, sub, 'index.html'), 'w', encoding='utf8').write(body)
+    os.makedirs(os.path.join(OUT, 'assets/data'), exist_ok=True)
+    np = os.path.join(OUT, 'assets/data/news.json')
+    if not os.path.exists(np) or '--reset-news' in sys.argv:
+        json.dump(NEWS_SEED, open(np, 'w', encoding='utf8'), ensure_ascii=False, indent=2)
+    print('index.html', len(html_out), 'bytes; icons:', len(USED))
