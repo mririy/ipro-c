@@ -69,19 +69,24 @@ html.modal-open .ask.dock-cta{opacity:0;pointer-events:none}
 .rhero__txt{position:absolute;left:0;right:0;top:calc(88px + env(safe-area-inset-top,0px));opacity:calc(1 - var(--dk,0) * 1.8);translate:0 calc(var(--dk,0) * -40px);z-index:2}
 .rhero__h{font:600 clamp(40px,11.4vw,132px)/.98 var(--display);letter-spacing:-.03em;color:#111114;max-width:11ch;text-transform:lowercase}
 .rhero__cap{margin-top:18px;max-width:34ch;font:600 13px/1.55 var(--mono);text-transform:uppercase;letter-spacing:.04em;color:#111114}
-.rhero__card{position:absolute;z-index:1;left:50%;top:70%;width:min(68vw,420px);aspect-ratio:3/4;border-radius:30px;overflow:hidden;
+.rhero__card{position:absolute;z-index:1;left:50%;top:63%;width:min(64vw,420px,36svh);aspect-ratio:3/4;border-radius:30px;overflow:hidden;
   background:#20202a;border:1px solid rgba(255,255,255,.55);box-shadow:0 40px 90px rgba(17,17,20,.38);
-  transform:translate(-50%,-50%) translateY(calc(var(--st,0) * 8vh)) perspective(1200px) rotateY(calc(-16deg + var(--p,0) * 26deg)) rotateZ(calc(9deg - var(--p,0) * 13deg)) scale(calc(1 - var(--st,0) * .18));will-change:transform}
+  /* только плоские повороты: в Safari на телефоне видео в 3D-повороте мерцает и вылезает за скругление */
+  transform:translate(-50%,-50%) translateY(calc(var(--st,0) * 10vh)) rotate(calc(8deg - var(--p,0) * 12deg)) skewY(calc(-3deg + var(--p,0) * 4deg)) scale(calc(1 - var(--st,0) * .28));
+  isolation:isolate;-webkit-mask-image:-webkit-radial-gradient(white,black);will-change:transform}
+.rhero__card video{transform:translateZ(0);border-radius:inherit}
+/* если телефон не дал видео запуститься само — без системной кнопки «Play» поверх карточки */
+.rhero__card video::-webkit-media-controls,.rhero__card video::-webkit-media-controls-start-playback-button,.rhero__card video::-webkit-media-controls-overlay-play-button{display:none!important;-webkit-appearance:none}
 .rhero__card video{width:100%;height:100%;object-fit:cover}
 .rhero__card::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,rgba(255,255,255,.42) 0%,rgba(255,255,255,.08) 34%,rgba(255,255,255,0) 50%,rgba(255,255,255,.12) 100%);pointer-events:none}
 .rhero__mark{position:absolute;left:18px;bottom:16px;width:96px;height:auto;filter:drop-shadow(0 2px 10px rgba(0,0,0,.4))}
 .rhero__chip{position:absolute;left:14px;top:14px;padding:8px 12px;border-radius:999px;background:rgba(17,17,20,.45);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.25);color:#fff;font:600 11px/1 var(--mono);text-transform:uppercase;letter-spacing:.05em}
-.rhero__steps{position:absolute;z-index:2;left:0;right:0;top:calc(84px + env(safe-area-inset-top,0px));display:grid;gap:22px;margin:0;list-style:none;pointer-events:none}
+.rhero__steps{position:absolute;z-index:2;left:0;right:0;top:calc(80px + env(safe-area-inset-top,0px));display:grid;gap:14px;margin:0;list-style:none;pointer-events:none}
 .rstep{display:grid;justify-items:center;gap:8px;text-align:center;opacity:var(--o,0);translate:0 calc((1 - var(--o,0)) * 24px)}
 .rstep:nth-child(1){--o:clamp(0,calc(var(--st,0) * 3),1)}
 .rstep:nth-child(2){--o:clamp(0,calc(var(--st,0) * 3 - 1),1)}
 .rstep:nth-child(3){--o:clamp(0,calc(var(--st,0) * 3 - 2),1)}
-.rstep__i{display:grid;place-items:center;width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.2)}
+.rstep__i{display:grid;place-items:center;width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.2)}
 .rstep__i .sun{width:28px;height:28px}
 .rstep b{font:600 15px/1.2 var(--mono);text-transform:uppercase;letter-spacing:.04em;background:var(--grad-d);-webkit-background-clip:text;background-clip:text;color:transparent}
 .rstep small{max-width:30ch;font:500 13.5px/1.4 var(--mono);text-transform:uppercase;letter-spacing:.02em;color:rgba(255,255,255,.8)}
@@ -192,7 +197,7 @@ html.modal-open .ask.dock-cta{opacity:0;pointer-events:none}
 @media (min-width:900px){
   .rhero__h{font-size:clamp(64px,7.4vw,132px);max-width:10ch}
   .rhero__txt{top:calc(120px + env(safe-area-inset-top,0px))}
-  .rhero__card{left:72%;top:56%;width:min(34vw,520px);aspect-ratio:4/5;transform:translate(-50%,-50%) perspective(1400px) rotateY(calc(-20deg + var(--p,0) * 30deg)) rotateZ(calc(10deg - var(--p,0) * 14deg)) scale(calc(1 - var(--st,0) * .08))}
+  .rhero__card{left:72%;top:56%;width:min(34vw,520px);aspect-ratio:4/5;transform:translate(-50%,-50%) rotate(calc(9deg - var(--p,0) * 13deg)) skewY(calc(-3deg + var(--p,0) * 4deg)) scale(calc(1 - var(--st,0) * .08))}
   .rhero__steps{left:6vw;right:auto;width:min(40vw,560px);top:50%;translate:0 -50%;gap:34px}
   .rstep b{font-size:17px}
   .rstep small{font-size:14px}
@@ -233,3 +238,17 @@ html.a11y .ask.dock-cta{background:#000;color:#fff}
 .night__cta{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 .num b{font-size:clamp(26px,9vw,88px)}
 .num:last-child b{font-size:clamp(14px,4.3vw,36px)}
+
+/* низкие телефоны: карточка меньше и ниже, шаги плотнее */
+@media (max-width:899px) and (max-height:800px){
+  .rhero__card{top:69%;width:min(60vw,32svh)}
+  .rhero__steps{gap:8px;top:calc(72px + env(safe-area-inset-top,0px))}
+  .rstep{gap:5px}
+  .rstep__i{width:38px;height:38px}
+  .rstep__i .sun{width:22px;height:22px}
+  .rhero__cap{font-size:12px}
+}
+@media (max-width:899px) and (max-height:700px){
+  .rhero__card{top:66%;width:min(52vw,27svh)}
+  .rhero__h{font-size:clamp(34px,10vw,48px)}
+}

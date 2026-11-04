@@ -26,6 +26,14 @@
   addEventListener('resize', upd);
   upd();
 
+  /* видео в карточке: если телефон не запустил его сам (режим энергосбережения), запускаем при первом касании или прокрутке */
+  var v = document.querySelector('.rhero__card video');
+  if (v) {
+    var kickV = function () { if (v.paused) { v.muted = true; var q = v.play(); if (q && q.catch) q.catch(function () {}); } };
+    ['touchstart', 'scroll', 'click'].forEach(function (ev) { addEventListener(ev, kickV, { passive: true, once: true }); });
+    v.addEventListener('canplay', kickV);
+  }
+
   /* кнопка записи внизу экрана прячется у самой формы */
   var sg = document.getElementById('signup');
   if (sg && 'IntersectionObserver' in window) {
