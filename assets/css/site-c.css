@@ -83,7 +83,8 @@ html.a11y .hd::before{display:none}
 html.a11y .hd{border-radius:0;left:0;right:0;top:0}
 
 /* ---------- кнопка записи внизу экрана ---------- */
-.ask.dock-cta,.ask.dock-cta.is-hidden{left:50%;right:auto;translate:-50% 0;bottom:calc(16px + env(safe-area-inset-bottom,0px));height:56px;padding:0 30px;gap:0;background:#fff;color:#0A2C55;font:600 13px/1 var(--mono);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;text-decoration:none;border:1px solid rgba(10,44,85,.08);box-shadow:0 14px 40px rgba(0,0,0,.3);opacity:1;transform:none;pointer-events:auto}
+.ask.dock-cta,.ask.dock-cta.is-hidden{left:50%;right:auto;translate:-50% 0;bottom:calc(16px + env(safe-area-inset-bottom,0px));height:56px;padding:0 30px;gap:0;background:transparent;color:#0A2C55;font:600 13px/1 var(--mono);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;text-decoration:none;border:0;box-shadow:none;opacity:1;transform:none;pointer-events:auto;isolation:isolate}
+.ask.dock-cta::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;background:#fff;border:1px solid rgba(10,44,85,.08);box-shadow:0 14px 40px rgba(0,0,0,.3)}
 html.at-signup .ask.dock-cta{opacity:0;transform:translateY(20px);pointer-events:none}
 html.modal-open .ask.dock-cta{opacity:0;pointer-events:none}
 
@@ -92,7 +93,7 @@ html.modal-open .ask.dock-cta{opacity:0;pointer-events:none}
    2-я — site-c.js: окно с видео сжимается в стеклянную карточку и уходит вниз, на чёрном появляются шаги */
 .hero.rhero{height:360vh;background:#0A2C55}
 /* синий школы, как в версии A: глубокий перелив с солнечным светом в центре и голубым внизу */
-.hero .pin{background:radial-gradient(60% 45% at 50% var(--sunY,50%),rgba(252,196,28,.28),rgba(252,196,28,0) 70%),radial-gradient(100% 55% at 50% 100%,rgba(42,112,180,.6),rgba(42,112,180,0) 72%),linear-gradient(180deg,#0A2C55 0%,#0B3262 55%,#0F3F75 100%)}
+.hero .pin::before{background:radial-gradient(60% 45% at 50% var(--sunY,50%),rgba(252,196,28,.28),rgba(252,196,28,0) 70%),radial-gradient(100% 55% at 50% 100%,rgba(42,112,180,.6),rgba(42,112,180,0) 72%),linear-gradient(180deg,#0A2C55 0%,#0B3262 55%,#0F3F75 100%)}
 .hero__orb text{font:600 7.2px var(--mono);letter-spacing:.02em}
 .hero__eyebrow{font-family:var(--mono);font-size:14px;text-transform:uppercase;letter-spacing:.04em}
 .hero__h{font-family:var(--display);font-weight:600;letter-spacing:-.03em;text-transform:lowercase;opacity:calc(var(--hop,1) * (1 - var(--tb,0)))}
@@ -261,7 +262,7 @@ html.a11y .rstep b,html.a11y .rstep small{background:none;color:#000}
 html.a11y .h2 em,html.a11y .h3 em,html.a11y .th__t,html.a11y .num b,html.a11y .night__bye,html.a11y .estate__arrive b{background:none;color:#000}
 html.a11y .sc.is-cut,html.a11y .sc.is-cut + .sc.is-cut,html.a11y .sc + .sc.is-cut{border-radius:0;clip-path:none;margin-top:0}
 html.a11y :root,html.a11y{--arc:0px}
-html.a11y .ask.dock-cta{background:#000;color:#fff}
+html.a11y .ask.dock-cta{color:#fff}html.a11y .ask.dock-cta::before{background:#000}
 
 /* ---------- длинные слова и крупные часы на узком экране ---------- */
 .h2--long{font-size:clamp(20px,5.7vw,64px)}
@@ -339,3 +340,11 @@ html:not(.cta-wait) .hero .hero__hint{opacity:0}
 .estate__head{top:calc(84px + var(--po) + env(safe-area-inset-top,0px))}
 .night__bye{top:calc(96px + var(--po) + env(safe-area-inset-top,0px))}
 html.t-nohd .hd,html.t-nocta .ask{display:none!important}
+
+/* ---------- iPhone (Safari 26): что красило полосы браузера (проверено на тестовых страницах bars/) ----------
+   Safari заливает свои полосы цветом фона закреплённых элементов (position: fixed/sticky): кнопки записи внизу
+   и закреплённых сцен. Псевдоэлементы он не смотрит — поэтому фон таких элементов перенесён на ::before. */
+.pin{background:transparent!important;isolation:isolate}
+.pin::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none}
+.nightseq .pin::before{background:#0C0C10}
+.lvl{background:transparent}
