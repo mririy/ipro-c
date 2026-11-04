@@ -18,6 +18,13 @@ body{font-synthesis-weight:auto}
 
 /* ---------- главы: ровный перелив, границы — плавной дугой, как у Рокета ---------- */
 .sc{background:var(--s1)}
+/* чёрные главы — не плоский цвет, а глубокий перелив с синим отсветом: так дороже, и Safari на iPhone
+   не заливает свои полосы сплошным чёрным (он делает так, когда у края экрана один сплошной цвет) */
+.sc--dark:not(.hero){background:radial-gradient(70% 45% at var(--dx1,88%) var(--dy1,8%),rgba(42,112,180,.24),rgba(42,112,180,0) 70%),radial-gradient(60% 40% at var(--dx2,8%) var(--dy2,85%),rgba(252,196,28,.07),rgba(252,196,28,0) 70%),linear-gradient(100deg,#0B0B0F 0%,#181B24 52%,#0D0D12 100%)}
+#programs{--dx1:12%;--dy1:6%;--dx2:90%;--dy2:60%}
+#extra{--dx1:85%;--dy1:30%}
+#summer{--dx1:15%;--dy1:20%}
+#gallery{--dx1:80%;--dy1:15%}
 /* светлые главы — мягкие пятна неба и солнца на светлом фоне, как переливы у Рокета */
 .sc--light{background:radial-gradient(55% 45% at var(--bx1,12%) var(--by1,18%),rgba(252,196,28,.34),rgba(252,196,28,0) 70%),radial-gradient(60% 50% at var(--bx2,88%) var(--by2,72%),rgba(42,112,180,.22),rgba(42,112,180,0) 70%),radial-gradient(45% 40% at 60% 30%,rgba(216,235,249,.9),rgba(216,235,249,0) 70%),#F4F8FD}
 #about{--bx1:85%;--by1:12%;--bx2:10%;--by2:60%}
@@ -64,8 +71,14 @@ body{font-synthesis-weight:auto}
 .hd__logo{margin-right:auto}
 /* шапка — скруглённая плашка с отступом от краёв, как у Рокета */
 .hd{left:8px;right:8px;top:calc(12px + env(safe-area-inset-top,0px));padding:6px 6px 6px 14px;border-radius:26px;transition:color .35s,background-color .35s,box-shadow .35s}
-.hd.is-solid{background:rgba(12,12,16,.55);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1),0 10px 30px rgba(0,0,0,.25)}
-.hd.is-light.is-solid{background:rgba(255,255,255,.62);box-shadow:inset 0 0 0 1px rgba(10,44,85,.08),0 10px 30px rgba(10,44,85,.1)}
+/* стекло шапки — на псевдоэлементе: Safari на iPhone красит свою полосу у часов в цвет фона закреплённой шапки,
+   а псевдоэлементы не учитывает */
+.hd.is-solid,.hd.is-light.is-solid{background:transparent;-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:none}
+.hd::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .35s,background-color .35s;
+  background:rgba(12,12,16,.55);-webkit-backdrop-filter:blur(14px) saturate(1.4);backdrop-filter:blur(14px) saturate(1.4);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1),0 10px 30px rgba(0,0,0,.25)}
+.hd.is-solid::before{opacity:1}
+.hd.is-light::before{background:rgba(255,255,255,.62);box-shadow:inset 0 0 0 1px rgba(10,44,85,.08),0 10px 30px rgba(10,44,85,.1)}
+html.a11y .hd::before{display:none}
 @media (min-width:900px){.hd{left:16px;right:16px;top:calc(12px + env(safe-area-inset-top,0px));padding:8px 8px 8px 22px;border-radius:30px}}
 html.a11y .hd{border-radius:0;left:0;right:0;top:0}
 
