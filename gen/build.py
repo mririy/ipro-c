@@ -139,12 +139,13 @@ def mix(a, b, t):
 
 _SKY = {'prev': None, 'tone': None}
 INK = '#0C0C10,#0C0C10'  # почти чёрный, как у Рокета; цвета школы — в акцентах и переливах
-C_SKY = {  # глава: (небо, тон) — переливы в цветах школы: небо #D8EBF9, солнце #FCC41C, синий #2A70B4
-    'news': (INK, 'dark'), 'concept': ('#D8EBF9,#FFF1C2', 'light'), 'about': ('#FFF4D6,#DCEEFF', 'light'),
-    'programs': (INK, 'dark'), 'food': ('#CFE6FB,#FFF1C2', 'light'), 'teachers': (INK, 'dark'),
-    'safety': ('#FFEDB3,#DCEEFF', 'light'), 'extra': (INK, 'dark'), 'transfer': ('#DCEEFF,#FFE7A0', 'light'),
-    'summer': (INK, 'dark'), 'reviews': ('#FFF1C2,#CFE6FB', 'light'), 'admission': (INK, 'dark'),
-    'gallery': (INK, 'dark'), 'act-night': (INK, 'dark'), 'signup': (INK, 'dark'),
+C_SKY = {  # глава: (основной цвет главы, тон текста). Сами фоны — в site-c.css (#id { --bg, --g1, --g2 }):
+    # спокойная основа школы (синий, небо, солнце) и несколько тёплых детских оттенков — персик, мята, абрикос
+    'news': ('#0D2F5C,#0D2F5C', 'dark'), 'concept': ('#FFF7E3,#FFF7E3', 'light'), 'about': ('#EEF6FE,#EEF6FE', 'light'),
+    'programs': ('#0A2C55,#0A2C55', 'dark'), 'food': ('#FFF0E6,#FFF0E6', 'light'), 'teachers': ('#FFD54F,#FFD54F', 'light'),
+    'safety': ('#E9F6F1,#E9F6F1', 'light'), 'extra': ('#2A70B4,#2A70B4', 'dark'), 'transfer': ('#E6F1FF,#E6F1FF', 'light'),
+    'summer': ('#FFE4C7,#FFE4C7', 'light'), 'reviews': ('#FFF8EA,#FFF8EA', 'light'), 'admission': ('#0A2C55,#0A2C55', 'dark'),
+    'gallery': ('#0D2F5C,#0D2F5C', 'dark'), 'act-night': (INK, 'dark'), 'signup': ('#0A2C55,#0A2C55', 'dark'),
 }  # небо и тон предыдущей главы — главы собираются по порядку страницы
 
 
@@ -157,7 +158,7 @@ def section(id_, title, body, sky, tone='light', cls='', extra=''):
     s1, s2 = sky.split(',')
     s0 = _SKY['prev'] or s1
     prev_tone = _SKY['tone']
-    cut = prev_tone is not None and prev_tone != tone
+    cut = prev_tone is not None and (prev_tone != tone or (id_ in C_SKY and s0 != s1)) and id_ != 'act-night'  # у каждой главы свой цвет — граница дугой; ночная сцена начинается сразу
     _SKY['prev'], _SKY['tone'] = s2, tone
     # середина перехода: из тёмного в светлое — бледный тон новой главы (без грязно-серой середины), иначе — смесь двух
     sb = mix(s1, '#FFFFFF', .55) if (cut and tone == 'light') else mix(s0, s1, .5)
