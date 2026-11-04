@@ -348,3 +348,8 @@ html.t-nohd .hd,html.t-nocta .ask{display:none!important}
 .pin::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none}
 .nightseq .pin::before{background:#0C0C10}
 .lvl{background:transparent}
+/* проверка (?sz): закреплённые сцены — между полосой у часов и панелью Safari, кнопка записи — над панелью */
+html.t-sz{--po:0px!important;--vbar:0px!important}
+html.t-sz .pin{top:calc(env(safe-area-inset-top,0px) + 8px)!important;height:calc(100svh - env(safe-area-inset-top,0px) - 16px)!important}
+html.t-sz .hero.rhero{margin-top:0!important;padding-top:calc(env(safe-area-inset-top,0px) + 8px)}
+html.t-sz .ask.dock-cta{top:calc(100svh - 76px);bottom:auto}
