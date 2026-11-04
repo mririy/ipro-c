@@ -84,7 +84,12 @@ html.a11y .hd{border-radius:0;left:0;right:0;top:0}
 
 /* ---------- кнопка записи внизу экрана ---------- */
 .ask.dock-cta,.ask.dock-cta.is-hidden{left:50%;right:auto;translate:-50% 0;bottom:calc(16px + env(safe-area-inset-bottom,0px));height:56px;padding:0 30px;gap:0;background:transparent;color:#0A2C55;font:600 13px/1 var(--mono);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;text-decoration:none;border:0;box-shadow:none;opacity:1;transform:none;pointer-events:auto;isolation:isolate}
-.ask.dock-cta::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;background:#fff;border:1px solid rgba(10,44,85,.08);box-shadow:0 14px 40px rgba(0,0,0,.3)}
+/* тень короткая: на iPhone Safari обрезает тень закреплённой кнопки у своей панели, и длинная тень давала видимую полосу */
+.ask.dock-cta::before{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;background:#fff;border:1px solid rgba(10,44,85,.08);box-shadow:0 6px 16px rgba(0,0,0,.22);transition:background-color .35s,border-color .35s}
+.ask.dock-cta{transition:color .35s}
+/* на светлых главах кнопка синяя — видна и без тени; на тёмных — белая */
+html.cta-light .ask.dock-cta{color:#fff}
+html.cta-light .ask.dock-cta::before{background:#0A2C55;border-color:rgba(255,255,255,.14);box-shadow:0 6px 16px rgba(10,44,85,.25)}
 html.at-signup .ask.dock-cta{opacity:0;transform:scale(.18);pointer-events:none}  /* уменьшается на месте: не уезжает под панель Safari */
 html.modal-open .ask.dock-cta{opacity:0;pointer-events:none}
 
@@ -264,7 +269,7 @@ html.a11y .rstep b,html.a11y .rstep small{background:none;color:#000}
 html.a11y .h2 em,html.a11y .h3 em,html.a11y .th__t,html.a11y .num b,html.a11y .night__bye,html.a11y .estate__arrive b{background:none;color:#000}
 html.a11y .sc.is-cut,html.a11y .sc.is-cut + .sc.is-cut,html.a11y .sc + .sc.is-cut{border-radius:0;clip-path:none;margin-top:0}
 html.a11y :root,html.a11y{--arc:0px}
-html.a11y .ask.dock-cta{color:#fff}html.a11y .ask.dock-cta::before{background:#000}
+html.a11y .ask.dock-cta{color:#fff!important}html.a11y .ask.dock-cta::before{background:#000!important}
 
 /* ---------- длинные слова и крупные часы на узком экране ---------- */
 .h2--long{font-size:clamp(20px,5.7vw,64px)}
@@ -377,7 +382,7 @@ html.t-nohd .hd,html.t-nocta .ask{display:none!important}
   html.ios-bars.js:not(.a11y) .nightseq{background:#0C0C10}
   html.ios-bars.js:not(.a11y) .lvl{position:relative;top:0}
   html.ios-bars.js:not(.a11y) .lvl.is-stk{position:sticky;top:calc(78px + env(safe-area-inset-top,0px))}
-  html.ios-bars.js:not(.a11y) .ask.dock-cta{top:calc(100svh - 56px - 6px + var(--drop,0px));bottom:auto;transition:opacity .45s var(--ease),transform .7s cubic-bezier(.2,1.25,.3,1),top .35s var(--ease)}
+  html.ios-bars.js:not(.a11y) .ask.dock-cta{top:calc(100svh - 56px + 4px + var(--drop,0px));bottom:auto;transition:opacity .45s var(--ease),transform .7s cubic-bezier(.2,1.25,.3,1),top .35s var(--ease)}
 }
 @media (prefers-reduced-motion:no-preference) and (max-width:899px){
   html.ios-bars.js:not(.a11y) .hero__h .r1{top:calc(70px + 3svh)}
@@ -387,4 +392,4 @@ html.t-nohd .hd,html.t-nocta .ask{display:none!important}
 }
 @media (prefers-reduced-motion:no-preference) and (max-width:899px) and (max-height:800px){html.ios-bars.js:not(.a11y) .rhero__slot{top:66%}}
 @media (prefers-reduced-motion:no-preference) and (max-width:899px) and (max-height:700px){html.ios-bars.js:not(.a11y) .rhero__slot{top:68%}}
-@media (prefers-reduced-motion:no-preference) and (min-width:900px){html.ios-bars.js:not(.a11y) .ask.dock-cta{top:calc(100svh - 60px - 6px + var(--drop,0px))}html.ios-bars.js:not(.a11y) .lvl.is-stk{top:96px}}
+@media (prefers-reduced-motion:no-preference) and (min-width:900px){html.ios-bars.js:not(.a11y) .ask.dock-cta{top:calc(100svh - 60px + 4px + var(--drop,0px))}html.ios-bars.js:not(.a11y) .lvl.is-stk{top:96px}}

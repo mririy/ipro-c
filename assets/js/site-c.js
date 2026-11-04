@@ -105,7 +105,7 @@
     var dropNow = -1;
     function placeCta() {
       var svh = probe.offsetHeight, h = window.visualViewport ? visualViewport.height : innerHeight;
-      var d = Math.round(Math.max(0, Math.min(60, (h - svh) * .4)));
+      var d = Math.round(Math.max(0, Math.min(70, (h - svh) * .62)));
       if (d !== dropNow) { dropNow = d; root.style.setProperty('--drop', d + 'px'); }
     }
     addEventListener('scroll', placeCta, { passive: true });
@@ -113,6 +113,19 @@
     if (window.visualViewport) visualViewport.addEventListener('resize', placeCta);
     placeCta();
   }
+
+  /* цвет кнопки записи — по главе под ней: на светлой синяя, на тёмной белая */
+  var ctaEl = document.querySelector('.ask.dock-cta'), ctaSecs = [].slice.call(document.querySelectorAll('main > .sc')), ctaTick = false, ctaLight = null;
+  function toneCta() {
+    ctaTick = false;
+    if (!ctaEl) return;
+    var r = ctaEl.getBoundingClientRect(), y = r.top + r.height / 2, light = false;
+    for (var i = ctaSecs.length - 1; i >= 0; i--) { var b = ctaSecs[i].getBoundingClientRect(); if (b.top <= y && b.bottom > y) { light = ctaSecs[i].dataset.tone === 'light'; break; } }
+    if (light !== ctaLight) { ctaLight = light; root.classList.toggle('cta-light', light); }
+  }
+  addEventListener('scroll', function () { if (!ctaTick) { ctaTick = true; requestAnimationFrame(toneCta); } }, { passive: true });
+  addEventListener('resize', toneCta);
+  toneCta();
 
   /* кнопка записи внизу экрана прячется у самой формы */
   var sg = document.getElementById('signup');
