@@ -364,10 +364,27 @@ html.t-nohd .hd,html.t-nocta .ask{display:none!important}
   html.ios-bars.js:not(.a11y) .pin{position:fixed!important;left:8px;right:8px;top:var(--pt)!important;height:calc(100svh - var(--pt) - var(--pb))!important;border-radius:28px;overflow:hidden;-webkit-mask-image:-webkit-radial-gradient(white,black)}
   html.ios-bars.js:not(.a11y) .hero.rhero,html.ios-bars.js:not(.a11y) .estate,html.ios-bars.js:not(.a11y) .nightseq{clip-path:inset(0)}
   html.ios-bars.js:not(.a11y) .hero.rhero{margin-top:0}
+  /* у панели первого экрана нет своего фона: свет солнца и голубой отсвет гаснут внутри неё, а вокруг — тот же синий
+     главы. Так под полосами Safari нет «другого» синего и не видно края панели; скругление видно только у видео. */
+  html.ios-bars.js:not(.a11y) .hero .pin::before{background:radial-gradient(55% 34% at 50% var(--sunY,50%),rgba(252,196,28,.26),rgba(252,196,28,0) 72%),radial-gradient(70% 30% at 50% 62%,rgba(42,112,180,.45),rgba(42,112,180,0) 75%)}
+  /* внутри панели отступы — от её краёв: полоса у часов и панель Safari уже за её пределами */
+  html.ios-bars.js:not(.a11y) .hero__hint{bottom:14px}
+  html.ios-bars.js:not(.a11y) .estate__head{top:78px}
+  html.ios-bars.js:not(.a11y) .night__bye{top:84px}
+  html.ios-bars.js:not(.a11y) .estate__arrive{bottom:72px}
+  html.ios-bars.js:not(.a11y) .night__cta{bottom:72px}
   html.ios-bars.js:not(.a11y) .estate{background:#fff}
   html.ios-bars.js:not(.a11y) .nightseq{background:#0C0C10}
   html.ios-bars.js:not(.a11y) .lvl{position:relative;top:0}
   html.ios-bars.js:not(.a11y) .lvl.is-stk{position:sticky;top:calc(78px + env(safe-area-inset-top,0px))}
   html.ios-bars.js:not(.a11y) .ask.dock-cta{top:calc(100svh - 56px - 6px + var(--drop,0px));bottom:auto;transition:opacity .45s var(--ease),transform .7s cubic-bezier(.2,1.25,.3,1),top .35s var(--ease)}
 }
+@media (prefers-reduced-motion:no-preference) and (max-width:899px){
+  html.ios-bars.js:not(.a11y) .hero__h .r1{top:calc(70px + 3svh)}
+  html.ios-bars.js:not(.a11y) .hero__h .r2{bottom:calc(64px + 2svh)}
+  html.ios-bars.js:not(.a11y) .rhero__steps{top:72px}
+  html.ios-bars.js:not(.a11y) .rhero__slot{top:62%}
+}
+@media (prefers-reduced-motion:no-preference) and (max-width:899px) and (max-height:800px){html.ios-bars.js:not(.a11y) .rhero__slot{top:66%}}
+@media (prefers-reduced-motion:no-preference) and (max-width:899px) and (max-height:700px){html.ios-bars.js:not(.a11y) .rhero__slot{top:68%}}
 @media (prefers-reduced-motion:no-preference) and (min-width:900px){html.ios-bars.js:not(.a11y) .ask.dock-cta{top:calc(100svh - 60px - 6px + var(--drop,0px))}html.ios-bars.js:not(.a11y) .lvl.is-stk{top:96px}}
