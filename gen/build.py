@@ -10,6 +10,7 @@
 import html, json, os, re, sys, hashlib, shutil
 sys.path.insert(0, os.path.dirname(__file__))
 from content import *  # noqa
+import teachers as TEACH  # педагоги из документа школы
 
 OUT = sys.argv[1]  # папка сайта
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -365,15 +366,77 @@ def food():
     return section('food', 'Питание', body, '#8AC8F5,#DDEFFD', 'light', 'food')
 
 
+def ped_short(p):
+    """Чему учит педагог — коротко, без кавычек: «Русский язык», «Литература» → Русский язык · Литература."""
+    return ' · '.join(x.strip(' «»;') for x in re.split(r'»[,;]\s*«', p['subjects']))
+
+
+def ped_photo(p):
+    return f"ped-{p['n']:02d}" if os.path.exists(os.path.join(OUT, 'assets/img', f"ped-{p['n']:02d}.jpg")) else None
+
+
+def ped_initials(p):
+    w = p['name'].replace('Мистер ', '').split()
+    return (w[0][0] + (w[1][0] if len(w) > 1 else '')).upper()
+
+
+def ped_info(p):
+    """Подробности о педагоге: стаж, образование и регалии — одинаково в окне педагога и в общем списке."""
+    rows = ''.join(f'<div class="ped__row"><dt>{e(l)}</dt><dd>{"".join(f"<span>{e(v)}</span>" for v in vs)}</dd></div>' for l, vs in p['rows'])
+    hon = ''.join(f'<li>{I("medal")}<span>{e(h)}</span></li>' for h in p['honours'])
+    stage = f'<p class="ped__stage">{I("clock")}<span>Педагогический стаж</span><b>{e(p["stage"])}</b></p>' if p['stage'] else ''
+    return (f'{stage}<dl class="ped__rows">{rows}</dl>' + (f'<ul class="ped__hon">{hon}</ul>' if hon else ''))
+
+
 def teachers():
     t = TEACHERS
-    cards = ''.join(f'<figure class="person rv"><span class="person__ph"><img src="assets/img/{img}.jpg"{ss(img, "(max-width: 900px) 46vw, 300px")} alt="{e(name)}" loading="lazy"></span><figcaption><b>{e(name)}</b><span>{e(role)}</span></figcaption></figure>' for img, name, role in t['people'])
+    by = {p['n']: p for p in TEACH.PEOPLE}
+    cards = ''
+    for n in TEACH.MAIN:
+        p = by[n]; ph = ped_photo(p)
+        img = f'<img src="assets/img/{ph}.jpg"{ss(ph, "(max-width: 900px) 46vw, 300px")} alt="{e(p["name"])}" loading="lazy">' if ph else f'<i class="person__mono">{ped_initials(p)}</i>'
+        cards += (f'<button type="button" class="person rv" data-open="ped-{n:02d}" aria-label="{e(p["name"])}: подробнее">'
+                  f'<span class="person__ph">{img}<span class="person__plus">{I("arrow-up-right")}</span></span>'
+                  f'<span class="person__cap"><b>{e(p["name"])}</b><span>{e(ped_short(p))}</span></span></button>')
     body = f'''  <div class="wrap">
     {kick(LEADINS['teachers'][1])}
     {h2(t['title'], t['title_em'])}
     <div class="people">{cards}</div>
+    <div class="people__all rv"><button type="button" class="pill pill--sun" data-open="peds">{I("users")} Все педагоги · {len(TEACH.PEOPLE)} {I("arrow-right")}</button></div>
   </div>'''
     return section('teachers', 'Педагоги', body, '#A5D3F6,#EAF5FD', 'light', 'teachers')
+
+
+def ped_dialogs():
+    """Окно каждого основного педагога и окно «Все педагоги» — список, каждый педагог раскрывается по нажатию."""
+    by = {p['n']: p for p in TEACH.PEOPLE}
+    out = ''
+    for n in TEACH.MAIN:
+        p = by[n]; ph = ped_photo(p)
+        out += f'''<dialog class="sheet pedsheet" id="ped-{n:02d}" aria-labelledby="pedT-{n:02d}">
+  <figure class="pedsheet__ph">{f'<img src="assets/img/{ph}.jpg"{ss(ph, "(max-width: 900px) 100vw, 360px")} alt="{e(p["name"])}" loading="lazy">' if ph else ''}<button class="xbtn" type="button" data-close aria-label="Закрыть">{I('x')}</button></figure>
+  <div class="sheet__body">
+    <p class="kick">{e(p['role'])}</p>
+    <h2 class="pedsheet__t" id="pedT-{n:02d}">{e(p['name'])}</h2>
+    <p class="ped__subj">{e(p['subjects'])}</p>
+    {ped_info(p)}
+    <div class="pinsheet__go"><button type="button" class="pill" data-open="peds">{I("users")} Все педагоги {I("arrow-right")}</button></div>
+  </div>
+</dialog>
+'''
+    rows = ''
+    for p in TEACH.PEOPLE:
+        ph = ped_photo(p)
+        av = f'<img src="assets/img/{small("assets/img/" + ph + ".jpg")[11:]}" alt="" loading="lazy">' if ph else f'<i>{ped_initials(p)}</i>'
+        rows += (f'<details class="pedrow" id="pedrow-{p["n"]:02d}"><summary><span class="pedrow__av">{av}</span>'
+                 f'<span class="pedrow__t"><b>{e(p["name"])}</b><span>{e(ped_short(p))}</span></span>{I("chevron-right", "pedrow__chev")}</summary>'
+                 f'<div class="pedrow__body"><p class="ped__role">{e(p["role"])}</p><p class="ped__subj">{e(p["subjects"])}</p>{ped_info(p)}</div></details>')
+    out += f'''<dialog class="sheet pedlist" id="peds" aria-labelledby="pedsT">
+  <div class="sheet__bar"><h2 id="pedsT">Педагоги Ай Про <small>{len(TEACH.PEOPLE)}</small></h2><button class="xbtn" type="button" data-close aria-label="Закрыть">{I('x')}</button></div>
+  <div class="sheet__body"><p class="pedlist__hint">Нажмите на педагога — откроются образование, стаж и достижения.</p>{rows}</div>
+</dialog>
+'''
+    return out
 
 
 def safety():
@@ -838,7 +901,7 @@ def page():
             + extra() + transfer() + summer() + reviews() + admission() + gallery() + night() + signup())
     n = len(PROGRAMS)
     dialogs = ''.join(program_dialog(p, PROGRAMS[(i - 1) % n], PROGRAMS[(i + 1) % n]) for i, p in enumerate(PROGRAMS))
-    dialogs += menu_dialog() + pin_dialogs() + docs_dialog() + album_dialog() + lightbox() + helper_dialog()
+    dialogs += menu_dialog() + pin_dialogs() + ped_dialogs() + docs_dialog() + album_dialog() + lightbox() + helper_dialog()
     desc = 'Ай Про (IPROSCHOOL) — частная школа полного дня в Ялте для детей 4–18 лет: детский сад и школа в историческом особняке, малые группы до 14 человек, языки с носителями, кружки, питание и трансфер. Три пробных дня бесплатно.'
     return f'''<!doctype html>
 <html lang="ru">

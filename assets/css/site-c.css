@@ -376,3 +376,62 @@ html.t-nohd .hd,html.t-nocta .ask{display:none!important}
   html.ios-bars.js:not(.a11y).cta-light .ask.dock-cta::before{box-shadow:0 -6px 14px -4px rgba(10,44,85,.25)}
 }
 @media (prefers-reduced-motion:no-preference) and (min-width:900px){html.ios-bars.js:not(.a11y) .ask.dock-cta{top:calc(100svh - 60px - 10px + var(--drop,0px))}}
+
+/* ---------- педагоги: основные — карточками (по нажатию — окно с подробностями), все — списком в окне ---------- */
+.person{display:block;width:100%;padding:0;border:0;background:none;color:inherit;text-align:left;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.person__ph{position:relative}
+.person__plus{position:absolute;right:10px;bottom:10px;display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.92);color:#0A2C55;box-shadow:0 4px 14px rgba(0,0,0,.2);transition:transform .3s var(--ease),background-color .3s}
+.person__plus .i{width:18px;height:18px}
+.person:hover .person__plus,.person:focus-visible .person__plus{transform:scale(1.08);background:#FCC41C}
+.person__cap{display:grid;gap:4px;margin-top:12px}
+.person__cap > span{font-size:15px;line-height:1.35;font-weight:500;color:var(--muted)}
+.person__mono,.pedrow__av i{display:grid;place-items:center;width:100%;height:100%;font:400 28px/1 var(--display);font-style:normal;color:#0A2C55;background:linear-gradient(135deg,#FFF1C2,#D8EBF9)}
+.people{grid-template-columns:1fr 1fr}
+.people__all{display:flex;justify-content:center;margin-top:36px}
+.people__all .pill .i{width:20px;height:20px}
+/* окно педагога */
+.pedsheet__ph{position:relative;margin:0;height:min(48vh,420px);background:#dfe9f3}
+.pedsheet__ph img{width:100%;height:100%;object-fit:cover;object-position:50% 22%}
+.pedsheet__ph .xbtn{position:absolute;right:14px;top:14px}
+.pedsheet .sheet__body{padding-top:22px;gap:12px}
+.pedsheet__t{margin:4px 0 0;font:400 clamp(26px,6.4vw,36px)/1.08 var(--display);letter-spacing:-.012em;color:#0A2C55}
+.ped__subj{margin:0;font-weight:600;line-height:1.4;color:#2A70B4}
+.ped__role{margin:0;font:600 12.5px/1.3 var(--mono);text-transform:uppercase;letter-spacing:.06em;color:#22364F}
+.ped__stage{display:flex;align-items:center;gap:10px;margin:4px 0 0;padding:14px 16px;border-radius:18px;background:#FFF4CC;color:#0A2C55;font-weight:600}
+.ped__stage .i{width:20px;height:20px;flex:none}
+.ped__stage b{margin-left:auto;font:400 18px/1.1 var(--display);white-space:nowrap}
+.ped__rows{display:grid;gap:14px;margin:4px 0 0}
+.ped__row dt{font:600 12px/1.2 var(--mono);text-transform:uppercase;letter-spacing:.08em;color:#2A70B4}
+.ped__row dd{display:grid;gap:4px;margin:6px 0 0;font-size:16px;line-height:1.45;color:#0A2C55}
+.ped__row dd span:first-child:not(:only-child){font-weight:600}
+.ped__hon{display:grid;gap:8px;margin:2px 0 0;padding:0;list-style:none}
+.ped__hon li{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-radius:16px;background:#EEF5FD;font-size:15.5px;line-height:1.45;color:#0A2C55}
+.ped__hon .i{flex:none;width:20px;height:20px;margin-top:1px;color:#D99A00}
+.pedsheet .pinsheet__go .pill{width:100%}
+/* окно «Все педагоги» */
+.pedlist .sheet__bar h2 small{margin-left:6px;font:600 14px/1 var(--mono);color:#2A70B4;vertical-align:middle}
+.pedlist .sheet__body{gap:8px}
+.pedlist__hint{margin:0 0 6px;font-size:15px;color:#22364F}
+.pedrow{border-radius:20px;background:#F4F8FD;transition:background-color .25s}
+.pedrow[open]{background:#EEF5FD}
+.pedrow summary{display:flex;align-items:center;gap:14px;padding:10px 14px 10px 10px;list-style:none;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.pedrow summary::-webkit-details-marker{display:none}
+.pedrow__av{flex:none;width:56px;height:56px;border-radius:50%;overflow:hidden;background:#dfe9f3}
+.pedrow__av img{width:100%;height:100%;object-fit:cover;object-position:50% 20%}
+.pedrow__av i{font-size:18px}
+.pedrow__t{display:grid;gap:2px;min-width:0}
+.pedrow__t b{font:600 17px/1.25 var(--text);color:#0A2C55}
+.pedrow__t span{font-size:14.5px;line-height:1.35;color:#22364F}
+.pedrow__chev{flex:none;width:20px;height:20px;margin-left:auto;color:#2A70B4;transition:transform .3s var(--ease)}
+.pedrow[open] .pedrow__chev{transform:rotate(90deg)}
+.pedrow__body{display:grid;gap:12px;padding:2px 16px 18px 80px}
+@media (max-width:520px){.pedrow__body{padding-left:16px}}
+@media (min-width:900px){
+  .people{grid-template-columns:repeat(4,1fr)}
+  .pedsheet[open]{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);width:min(980px,92vw)}
+  .pedsheet__ph{height:auto;min-height:100%}
+  .pedsheet .sheet__body{padding:32px 32px 32px 28px;align-content:start}
+  .pedlist[open]{width:min(820px,92vw)}
+}
+html.a11y .person__plus{background:#000;color:#fff}
+html.a11y .pedrow,html.a11y .ped__hon li,html.a11y .ped__stage{background:#fff;border:2px solid #000}
